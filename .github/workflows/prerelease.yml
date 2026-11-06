@@ -1,0 +1,51 @@
+name: 'Prerelease'
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'hotfix/**'
+
+concurrency:
+  group: prerelease-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  get-version:
+    name: 'Calculate Version'
+    uses: DEFRA/lis-github-actions/.github/workflows/version.yml@0.5.0
+    with:
+      ref: ${{ github.sha }}
+      branch: ${{ github.ref_name }}
+      release-type: prerelease
+
+  validate:
+    name: 'Validate'
+    needs: get-version
+    uses: DEFRA/lis-github-actions/.github/workflows/dotnet-service-validate.yml@0.5.0
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      ref: ${{ github.sha }}
+
+  sonar-analysis:
+    name: 'Sonar Analysis'
+    needs: get-version
+    uses: DEFRA/lis-github-actions/.github/workflows/dotnet-sonar.yml@0.5.0
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      ref: ${{ github.sha }}
+      branch: ${{ github.ref_name }}
+    secrets: inherit
+
+  create-tag:
+    name: 'Tag Validated Commit'
+    needs: [get-version, validate, sonar-analysis]
+    if: needs.sonar-analysis.outputs.quality-gate-status == 'PASSED'
+    uses: DEFRA/lis-github-actions/.github/workflows/tag.yml@0.5.0
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      ref: ${{ github.sha }}
+    secrets: inherit

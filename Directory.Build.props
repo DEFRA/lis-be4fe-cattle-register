@@ -1,0 +1,52 @@
+<Project>
+  <PropertyGroup>
+    <Authors>Defra</Authors>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Title>LIS BE4FE cattle register</Title>
+    <Description>Be4Fe cattle register module for the livestock information system.</Description>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>api, mongodb, livestock</PackageTags>
+    <Copyright>Copyright © $([System.DateTime]::Now.ToString("yyyy")) Defra</Copyright>
+    <PackageProjectUrl>https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs</PackageProjectUrl>
+    <PackageIcon>icon.png</PackageIcon>
+
+    <RootNamespace>Defra.Lis.Be4Fe</RootNamespace>
+    <ProductName>Defra Livestock Information Service</ProductName>
+    <RootNamespace>$(RootNamespace).$(MSBuildProjectName)</RootNamespace>
+    <AssemblyName>$(RootNamespace)</AssemblyName>
+  </PropertyGroup>
+  
+  <ItemGroup>
+      <Content Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="/">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+  </ItemGroup>
+
+
+  <!-- global packages -->
+  <ItemGroup>
+    <Using Include="Microsoft" />
+  </ItemGroup>
+
+  <!-- Code analysis packages and configuration-->
+  <ItemGroup>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)stylecop.json">
+      <Link>Properties\stylecop.json</Link>
+    </AdditionalFiles>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StyleCop.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="SonarAnalyzer.CSharp">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>

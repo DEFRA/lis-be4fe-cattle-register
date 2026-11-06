@@ -1,0 +1,20 @@
+﻿{
+  "profiles": {
+    "Development": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:8085",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Mongo__DatabaseUri": "mongodb://dev:dev@127.0.0.1:27017/",
+        "Mongo__DatabaseName": "lis-be4fe-cattle-register",
+        "CattleApi__BaseUrl": "http://localhost:5019",
+        "CattleApi__ApiKey": "local-dev-cattle-api-key",
+        "ApiKeyAuthentication__Keys__0": "test",
+        "Cache__DurationMinutes": "5",
+        "UnallocatedEarTag__Data": "WwogIHsKICAgICJjcGgiOiAiMDMvMjAyLzAwMjEiICwKICAgICJ0YWciOiAiVUsxMjM0IgogIH0sCiAgewogICAgImNwaCI6ICIwMy8yMDIvMDAyMSIgLAogICAgInRhZyI6ICJVSzEyMzUiCiAgfSwKICB7CiAgICAiY3BoIjogIjAzLzIwMi8wMDIxIiAsCiAgICAidGFnIjogIlVLMTIzNiIKICB9LAogIHsKICAgICJjcGgiOiAiMDMvMjAyLzAwMjEiICwKICAgICJ0YWciOiAiVUsxMjM3IgogIH0sCiAgewogICAgImNwaCI6ICIwMy8yMDIvMDAyMSIgLAogICAgInRhZyI6ICJVSzEyMzgiCiAgfSwKICB7CiAgICAiY3BoIjogIjAzLzIwMi8wMDIxIiAsCiAgICAidGFnIjogIlVLMTIzOSIKICB9LAogIHsKICAgICJjcGgiOiAiMDMvMjAyLzAwMjEiICwKICAgICJ0YWciOiAiVUsxMjQwIgogIH0sCiAgewogICAgImNwaCI6ICIyMi8wMDEvMDAwMSIgLAogICAgInRhZyI6ICJVSzIyMzQiCiAgfSwKICB7CiAgICAiY3BoIjogIjIyLzAwMS8wMDAxIiAsCiAgICAidGFnIjogIlVLMjIzNSIKICB9LAogIHsKICAgICJjcGgiOiAiMjIvMDAxLzAwMDEiICwKICAgICJ0YWciOiAiVUsyMjM2IgogIH0sCiAgewogICAgImNwaCI6ICIyMi8wMDEvMDAwMSIgLAogICAgInRhZyI6ICJVSzIyMzciCiAgfSwKICB7CiAgICAiY3BoIjogIjIyLzAwMS8wMDAxIiAsCiAgICAidGFnIjogIlVLMjIzOCIKICB9LAogIHsKICAgICJjcGgiOiAiMjIvMDAxLzAwMDEiICwKICAgICJ0YWciOiAiVUsyMjM5IgogIH0sCiAgewogICAgImNwaCI6ICIyMi8wMDEvMDAwMSIgLAogICAgInRhZyI6ICJVSzIyNDAiCiAgfQpdCgo="
+      }
+    }
+  }
+}
