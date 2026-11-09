@@ -4,6 +4,7 @@
 
 namespace Defra.Lis.Be4Fe.Api.Tests.CattleApi;
 
+using System.Diagnostics;
 using System.Net;
 using Defra.Lis.Be4Fe.CattleApi;
 using Defra.Lis.Be4Fe.Models.Lookups.Models;
@@ -23,13 +24,6 @@ public sealed class CattleHoldingRestClientTest
         """;
 
     private readonly StubHttpMessageHandler handler = new();
-
-    public static TheoryData<Exception> TransportFailures => new()
-    {
-        new HttpRequestException("Connection refused (cattle-api.test:80)", new System.Net.Sockets.SocketException(111)),
-        new HttpRequestException("Name or service not known (cattle-api.test:80)"),
-        new TaskCanceledException("The request was canceled due to the configured HttpClient.Timeout.", new TimeoutException()),
-    };
 
     [Theory]
     [InlineData(null)]
@@ -162,9 +156,24 @@ public sealed class CattleHoldingRestClientTest
     }
 
     [Theory]
-    [MemberData(nameof(TransportFailures))]
-    public async Task SearchCattleAsync_ThrowsServiceUnavailable_WhenTheCattleApiCannotBeReached(Exception failure)
+    [InlineData("ERROR1")]
+    [InlineData("ERROR2")]
+    [InlineData("ERROR3")]
+    public async Task SearchCattleAsync_ThrowsServiceUnavailable_WhenTheCattleApiCannotBeReached(string errorType)
     {
+        // It's a hack but soanr has a fit as exceptions dont serialize well.
+        Exception? failure = errorType switch
+        {
+            "ERROR1" => new HttpRequestException(
+                "Connection refused (cattle-api.test:80)",
+                new System.Net.Sockets.SocketException(111)),
+            "ERROR2" => new HttpRequestException("Name or service not known (cattle-api.test:80)"),
+            "ERROR3" => new TaskCanceledException(
+                "The request was canceled due to the configured HttpClient.Timeout.",
+                new TimeoutException()),
+            _ => throw new NotImplementedException(),
+        };
+
         handler.FailWith(failure);
         var client = CreateClient();
 
