@@ -9,18 +9,11 @@ using Defra.Lis.Be4Fe.Api.Config;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-public interface IMongoDbClientFactory
-{
-    IMongoClient GetClient();
-
-    IMongoCollection<T> GetCollection<T>(string collection);
-}
-
 [ExcludeFromCodeCoverage]
 public class MongoDbClientFactory : IMongoDbClientFactory
 {
     private readonly IMongoDatabase mongoDatabase;
-    private readonly IMongoClient client;
+    private readonly MongoClient client;
 
     public MongoDbClientFactory(IOptions<MongoConfig> config)
     {

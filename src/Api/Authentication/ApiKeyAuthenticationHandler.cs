@@ -44,7 +44,7 @@ public sealed partial class ApiKeyAuthenticationHandler(
             return Task.FromResult(AuthenticateResult.Fail("No API keys are configured."));
         }
 
-        var keyIndex = presented.Count == 1 ? FindKey(presented[0], keys) : -1;
+        var keyIndex = presented.Count == 1 ? FindKey(presented[0] ?? string.Empty, keys) : -1;
         if (keyIndex < 0)
         {
             return Task.FromResult(AuthenticateResult.Fail("The API key is not valid."));

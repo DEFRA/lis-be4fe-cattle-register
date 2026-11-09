@@ -1,4 +1,4 @@
-// <copyright file="BirthEndpointsTest.cs" company="Defra">
+// <copyright file="SubmissionEndpointsTest.cs" company="Defra">
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 

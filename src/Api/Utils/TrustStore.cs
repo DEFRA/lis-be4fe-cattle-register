@@ -11,7 +11,7 @@ using System.Security.Cryptography.X509Certificates;
 [ExcludeFromCodeCoverage]
 public static class TrustStore
 {
-    public static void LoadCustomTrustStoreFromEnvironment(this IServiceCollection _)
+    public static void LoadCustomTrustStoreFromEnvironment(this IServiceCollection sc)
     {
         var certificates = GetCertificates();
         AddCertificates(certificates);

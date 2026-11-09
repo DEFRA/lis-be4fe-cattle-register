@@ -33,6 +33,6 @@ public abstract class JsonErrorMiddleware : IMiddleware
             },
         };
 
-        await context.Response.WriteAsync(JsonSerializer.Serialize(payload));
+        await context.Response.WriteAsync(JsonSerializer.Serialize(payload), context.RequestAborted);
     }
 }

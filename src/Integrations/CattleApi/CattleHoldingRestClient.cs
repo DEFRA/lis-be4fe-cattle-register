@@ -41,12 +41,15 @@ public sealed partial class CattleHoldingRestClient(
 
         try
         {
-            var cattle = await ExecuteAsync("Search cattle on holding", cancellationToken, strategy => strategy
-                .WithResourceUrl($"{ApiVersion}/holdings/{segments.ToRoute()}/cattle")
-                .WithQueryParameter(() => !string.IsNullOrWhiteSpace(query.Eartag), "earTag", query.Eartag?.Trim() ?? string.Empty)
-                .WithQueryParameter(() => !string.IsNullOrWhiteSpace(query.Breed), "breed", query.Breed?.Trim() ?? string.Empty)
-                .WithQueryParameter(() => !string.IsNullOrWhiteSpace(query.Sex), "sex", query.Sex?.Trim() ?? string.Empty)
-                .ExecuteAndTransform<List<CattleApiCattle>, IReadOnlyCollection<CattleSummary>>(list => list.Select(ToCattleSummary).ToList()));
+            var cattle = await ExecuteAsync(
+                "Search cattle on holding",
+                strategy => strategy
+                    .WithResourceUrl($"{ApiVersion}/holdings/{segments.ToRoute()}/cattle")
+                    .WithQueryParameter(() => !string.IsNullOrWhiteSpace(query.Eartag), "earTag", query.Eartag?.Trim() ?? string.Empty)
+                    .WithQueryParameter(() => !string.IsNullOrWhiteSpace(query.Breed), "breed", query.Breed?.Trim() ?? string.Empty)
+                    .WithQueryParameter(() => !string.IsNullOrWhiteSpace(query.Sex), "sex", query.Sex?.Trim() ?? string.Empty)
+                    .ExecuteAndTransform<List<CattleApiCattle>, IReadOnlyCollection<CattleSummary>>(list => list.Select(ToCattleSummary).ToList()),
+                cancellationToken);
 
             LogRetrievedCattleForHolding(cattle.Count, segments.ToString(), !query.IsEmpty);
 
@@ -101,8 +104,8 @@ public sealed partial class CattleHoldingRestClient(
     /// </summary>
     private async Task<TResult> ExecuteAsync<TResult>(
         string action,
-        CancellationToken cancellationToken,
-        Func<IRestStrategy<CattleHoldingRestClient>, Task<TResult>> execute)
+        Func<IRestStrategy<CattleHoldingRestClient>, Task<TResult>> execute,
+        CancellationToken cancellationToken)
     {
         try
         {
