@@ -33,7 +33,7 @@ jobs:
   sonar-analysis:
     name: 'Sonar Analysis'
     needs: get-version
-    uses: .github/workflows/dotnet-sonar.yml
+    uses: ./.github/workflows/dotnet-sonar.yml
     with:
       version: ${{ needs.get-version.outputs.version }}
       ref: ${{ github.sha }}
