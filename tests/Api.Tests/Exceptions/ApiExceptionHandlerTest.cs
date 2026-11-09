@@ -4,6 +4,7 @@
 
 namespace Defra.Lis.Be4Fe.Api.Tests.Exceptions;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Defra.Lis.Be4Fe.Api.Exceptions;
 using Defra.Lis.Be4Fe.Api.Middleware.Headers;
@@ -27,6 +28,10 @@ public sealed class ApiExceptionHandlerTest
     };
 
     [Theory]
+    [SuppressMessage(
+        "Usage",
+        "xUnit1045:Avoid using TheoryData type arguments that are not serializable",
+        Justification = "Exception instances cannot be natively serialized by xUnit but are required for this test state.")]
     [MemberData(nameof(ExceptionCases))]
     public async Task ShouldMapExceptionsToProblemDetails(Exception exception, int expectedStatus, string expectedTitle)
     {
