@@ -33,7 +33,7 @@ jobs:
   sonar-analysis:
     name: 'Sonar Analysis'
     needs: get-version
-    uses: DEFRA/lis-github-actions/.github/workflows/dotnet-sonar.yml@0.5.0
+    uses: ./.github/workflows/dotnet-sonar.yml
     with:
       version: ${{ needs.get-version.outputs.version }}
       ref: ${{ github.event.pull_request.merge_commit_sha }}
