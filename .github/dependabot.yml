@@ -1,0 +1,41 @@
+# Managed by lis-github-monitor from config/dependabot/net.yml in DEFRA/lis-github-monitor.
+# Edit the template there; changes here are overwritten.
+version: 2
+
+updates:
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: Europe/London
+    commit-message:
+      prefix: 'LREG-XXX:'
+    cooldown:
+      default-days: 3
+    groups:
+      test:
+        patterns:
+          - xunit*
+          - Microsoft.NET.Test.Sdk
+          - coverlet.*
+          - Moq
+          - NSubstitute
+          - Shouldly
+          - Testcontainers*
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '10:30'
+      timezone: Europe/London
+    commit-message:
+      prefix: 'LREG-XXX:'
+    groups:
+      # One pull request for every DEFRA/lis-github-actions workflow bump.
+      lis-github-actions:
+        patterns:
+          - DEFRA/lis-github-actions/*
