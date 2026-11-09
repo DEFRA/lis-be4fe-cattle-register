@@ -119,10 +119,6 @@ Task("Build")
 Task("Test")
     .IsDependentOn("Build")
     .Does(() => {
-        var testSettings = new DotNetTestSettings  {
-            Verbosity = VERBOSITY,
-            Configuration = CONFIGURATION,
-        };
         var coverageOutput = DirectoryPath.FromString("./coverage");
         
         var testProjects = GetFiles("./tests/**/*.csproj");
@@ -137,15 +133,19 @@ Task("Test")
             Information($"Running Tests : { project.ToString()}");
             var projectCoverageDirectory = DirectoryPath.FromString(
                 project.GetFilenameWithoutExtension().ToString());
-            testSettings.ResultsDirectory = coverageOutput.Combine(projectCoverageDirectory);
-            testSettings.ArgumentCustomization = args => args
-                .AppendQuoted("--collect:XPlat Code Coverage")
-                .Append("--logger trx");
-            DotNetTest(project.ToString(), testSettings);
+            var resultsDirectory = coverageOutput.Combine(projectCoverageDirectory);
+
+            RunCommand(
+                "dotnet",
+                $"test --project \"{project.FullPath}\" " +
+                $"--configuration {CONFIGURATION} " +
+                $"--verbosity {VERBOSITY.ToString().ToLowerInvariant()} " +
+                $"--results-directory \"{resultsDirectory.FullPath}\" " +
+                "--coverage --coverage-output-format cobertura --report-trx");
         });
         
         Information($"Directory Path : { coverageOutput.ToString()}");
-        var glob = new GlobPattern($"./{coverageOutput}/**/coverage.cobertura.xml");
+        var glob = new GlobPattern($"./{coverageOutput}/**/*.cobertura.xml");
                  
         Information($"globpattern : { glob.ToString()}");
         var outputDirectory = Directory($"./coverage/reports");
