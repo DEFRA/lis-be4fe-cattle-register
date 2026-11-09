@@ -34,6 +34,7 @@ public sealed class StubHttpMessageHandler : HttpMessageHandler
     /// <summary>
     /// Fails the next request with <paramref name="exception"/>, as the transport does when the server cannot be reached.
     /// </summary>
+    /// <returns></returns>
     public StubHttpMessageHandler FailWith(Exception exception)
     {
         responses.Enqueue(() => throw exception);

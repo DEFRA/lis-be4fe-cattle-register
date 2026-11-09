@@ -15,6 +15,6 @@ public interface ICattleHoldingClient
 {
     /// <exception cref="ArgumentException">The CPH is not three segments.</exception>
     /// <exception cref="HoldingNotFoundException">The cattle API does not know the holding.</exception>
-    /// <returns><placeholder>A <see cref="Task"/> representing the asynchronous operation.</placeholder></returns>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     Task<IReadOnlyCollection<CattleSummary>> SearchCattleAsync(string cph, CattleSearchQuery query, CancellationToken cancellationToken = default);
 }
