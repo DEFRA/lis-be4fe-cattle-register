@@ -1,0 +1,66 @@
+name: 'Pull Request Validation'
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: pr-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  get-version:
+    name: 'Calculate Prospective Version'
+    uses: DEFRA/lis-github-actions/.github/workflows/version.yml@0.5.0
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+      branch: ${{ github.event.pull_request.head.ref }}
+      release-type: prerelease
+
+  validate:
+    name: 'Validate'
+    needs: get-version
+    uses: DEFRA/lis-github-actions/.github/workflows/dotnet-service-validate.yml@0.5.0
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      ref: ${{ github.event.pull_request.head.sha }}
+
+  sonar-analysis:
+    name: 'Sonar Analysis'
+    needs: get-version
+    uses: ./.github/workflows/dotnet-sonar.yml
+    with:
+      version: ${{ needs.get-version.outputs.version }}
+      ref: ${{ github.event.pull_request.head.sha }}
+    secrets: inherit
+
+  required-checks:
+    name: 'Pull Request Validation'
+    needs: [get-version, validate, sonar-analysis]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required jobs succeeded
+        env:
+          GET_VERSION_RESULT: ${{ needs.get-version.result }}
+          VALIDATE_RESULT: ${{ needs.validate.result }}
+          SONAR_ANALYSIS_RESULT: ${{ needs.sonar-analysis.result }}
+        run: |
+          results=(
+            "get-version=$GET_VERSION_RESULT"
+            "validate=$VALIDATE_RESULT"
+            "sonar-analysis=$SONAR_ANALYSIS_RESULT"
+          )
+
+          printf '%s\n' "${results[@]}"
+
+          for result in "${results[@]}"; do
+            if [[ "$result" != *=success ]]; then
+              echo "Required job did not succeed: $result" >&2
+              exit 1
+            fi
+          done

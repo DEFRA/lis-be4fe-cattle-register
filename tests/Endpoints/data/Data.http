@@ -1,0 +1,30 @@
+### List the unallocated eartags for a CPH
+# Answers 503 until the cattle API endpoint for unallocated eartags is defined.
+GET {{host}}/data/eartags/unallocated?cph={{cph}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+### List the unallocated eartags (no cph)
+GET {{host}}/data/eartags/unallocated
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_400_bad_request.js
+
+### List the possible dams for a CPH
+GET {{host}}/data/eartags/dams?cph={{cph}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js
+
+### List the possible sires for a CPH
+GET {{host}}/data/eartags/sires?cph={{cph}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js

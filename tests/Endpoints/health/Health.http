@@ -1,0 +1,5 @@
+### Get health status (no x-api-key or x-cdp-request-id needed)
+GET {{host}}/health
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js

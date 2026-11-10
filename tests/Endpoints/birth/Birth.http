@@ -1,0 +1,77 @@
+### Start or continue a submission
+GET {{host}}/submission/start?cph={{cph}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> {%
+    client.global.set("submissionId", response.body["submission-id"]);
+    client.test("Status is 200", () => client.assert(response.status === 200));
+%}
+
+### Save an animal's details
+POST {{host}}/submission/{{submissionId}}:update
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Content-Type: application/json
+
+{
+  "animal-id": "{{cattleId}}",
+  "section": "DETAILS",
+  "status": "COMPLETE",
+  "data": [
+    {
+      "key": "dob",
+      "value": "2026-11-01",
+      "type": "DATE"
+    }
+  ]
+}
+
+> ../asserts/Should_be_200_OK.js
+
+### Get an animal's details
+GET {{host}}/submission/{{submissionId}}/{{cattleId}}/details
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js
+
+### Delete an animal
+DELETE {{host}}/submission/{{submissionId}}/{{cattleId}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+
+> ../asserts/Should_be_200_OK.js
+
+### Delete an animal (no longer in the submission)
+DELETE {{host}}/submission/{{submissionId}}/{{cattleId}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+
+> ../asserts/Should_be_404.js
+
+### List the submissions for a CPH
+GET {{host}}/submission?cph={{cph}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js
+
+### Get a section (unknown submission)
+GET {{host}}/submission/unknown/{{cattleId}}/details
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_404.js
+
+### Start a submission (no CPH)
+GET {{host}}/submission/start
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_400_bad_request.js
