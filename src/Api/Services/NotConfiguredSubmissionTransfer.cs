@@ -6,6 +6,7 @@ namespace Defra.Lis.Be4Fe.Api.Services;
 
 using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
 using Defra.Lis.Be4Fe.CattleApi;
+using Defra.Lis.Be4Fe.Models.Submissions;
 
 /// <summary>
 /// Stands in until the transfer to the cattle API is built. It always fails, so a submission stays a draft rather than

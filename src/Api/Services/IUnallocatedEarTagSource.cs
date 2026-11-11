@@ -16,5 +16,5 @@ public interface IUnallocatedEarTagSource
     /// <exception cref="Defra.Lis.Be4Fe.CattleApi.HoldingNotFoundException">The cattle API does not know the holding.</exception>
     /// <exception cref="Defra.Lis.Be4Fe.CattleApi.ServiceUnavailableException">The cattle API cannot be reached.</exception>
     /// <returns>The unallocated eartags on the holding.</returns>
-    Task<IReadOnlyCollection<UnallocatedEartag>> GetUnallocatedEarTagAsync(string cph, CancellationToken cancellationToken = default);
+    Task<IReadOnlyCollection<UnallocatedEarTag>> GetUnallocatedEarTagAsync(string cph, CancellationToken cancellationToken = default);
 }

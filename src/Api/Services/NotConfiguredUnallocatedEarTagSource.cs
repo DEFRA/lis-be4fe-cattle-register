@@ -18,7 +18,7 @@ public sealed class NotConfiguredUnallocatedEarTagSource(
 {
     private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
-    public Task<IReadOnlyCollection<UnallocatedEartag>> GetUnallocatedEarTagAsync(
+    public Task<IReadOnlyCollection<UnallocatedEarTag>> GetUnallocatedEarTagAsync(
         string cph,
         CancellationToken cancellationToken = default)
     {
@@ -26,17 +26,17 @@ public sealed class NotConfiguredUnallocatedEarTagSource(
 
         if (string.IsNullOrWhiteSpace(earTagOptions.Value?.Data))
         {
-            return Task.FromResult<IReadOnlyCollection<UnallocatedEartag>>([]);
+            return Task.FromResult<IReadOnlyCollection<UnallocatedEarTag>>([]);
         }
 
         var bytes = Convert.FromBase64String(earTagOptions.Value.Data);
         var tags = JsonSerializer.Deserialize<List<UnallocatedTagItem>>(bytes, SerializerOptions) ?? [];
 
-        return Task.FromResult<IReadOnlyCollection<UnallocatedEartag>>(
+        return Task.FromResult<IReadOnlyCollection<UnallocatedEarTag>>(
         [
             .. tags
                 .Where(t => string.Equals(t.Cph, cph, StringComparison.OrdinalIgnoreCase))
-                .Select(x => new UnallocatedEartag { Eartag = x.Tag ?? string.Empty })
+                .Select(x => new UnallocatedEarTag { Eartag = x.Tag ?? string.Empty })
         ]);
     }
 

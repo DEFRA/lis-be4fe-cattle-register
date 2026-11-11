@@ -6,6 +6,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.HeaderPropagation" Version="10.0.14" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.14" />
     <PackageVersion Include="Defra.Livestock.Sdk.Api.Strategies" Version="0.0.9" />
+    <PackageVersion Include="MongoDB.Bson" Version="3.13.0" />
     <PackageVersion Include="MongoDB.Driver" Version="3.13.0" />
     <PackageVersion Include="MongoDB.Driver.Authentication.AWS" Version="3.13.0" />
     <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="9.0.0" />
