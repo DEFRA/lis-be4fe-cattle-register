@@ -276,6 +276,27 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [InlineData("INT")]
     [InlineData("NUMBER")]
     [InlineData("BOOL")]
+    public async Task UpdateShouldStoreAndReturnANullValue(string type)
+    {
+        var id = await StartAsync();
+
+        await UpdateAsync(id, Animal, $$"""[{"key":"k","value":null,"type":"{{type}}"}]""");
+
+        var stored = factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem().Data.ShouldHaveSingleItem();
+        stored.Value.ShouldBeNull();
+        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        var item = body.RootElement.GetProperty("data")[0];
+        item.GetProperty("key").GetString().ShouldBe("k");
+        item.GetProperty("value").ValueKind.ShouldBe(JsonValueKind.Null);
+        item.GetProperty("type").GetString().ShouldBe(type);
+    }
+
+    [Theory]
+    [InlineData("STRING")]
+    [InlineData("DATE")]
+    [InlineData("INT")]
+    [InlineData("NUMBER")]
+    [InlineData("BOOL")]
     [InlineData("string")]
     public async Task UpdateShouldAcceptEverySupportedType(string type)
     {
@@ -315,6 +336,9 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [InlineData("""{"status":"DRAFT","data":[{"key":"k","type":"STRING"}]}""")]
     [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":1,"type":"INT"}]}""")]
     [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":"v"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":null,"type":null}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":null,"type":""}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":null,"type":" "}]}""")]
     [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":"v","type":"OTHER"}]}""")]
     [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":"v","type":"STRING"},{"key":"k","value":"w","type":"STRING"}]}""")]
     [InlineData("""{"status":"OTHER","data":[]}""")]
@@ -698,7 +722,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Theory]
     [InlineData("POST", """{"status":"draft","data":null}""")]
     [InlineData("PATCH", """{"status":"draft","data":[null]}""")]
-    [InlineData("POST", """{"status":"draft","data":[{"key":"k","value":null,"type":"STRING"}]}""")]
+    [InlineData("POST", """{"status":"draft","data":[{"key":"k","value":null}]}""")]
     [InlineData("PATCH", """{"status":"draft","data":[{"key":"k","value":"v","type":null}]}""")]
     [InlineData("POST", """{"status":"draft","data":[{"key":"k","value":"v","type":"OTHER"}]}""")]
     [InlineData("PATCH", """{"status":"draft","data":[{"key":"k","value":"v","type":"STRING"},{"key":"k","value":"w","type":"STRING"}]}""")]
