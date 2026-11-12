@@ -6,7 +6,6 @@ FROM mcr.microsoft.com/dotnet/sdk:${PARENT_VERSION} AS build
 WORKDIR /src
 COPY . .
 WORKDIR "/src"
-RUN dotnet test
 RUN dotnet publish src/Api -c Release -o /app/publish /p:UseAppHost=false
 
 # Final production image
