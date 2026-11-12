@@ -4,6 +4,8 @@
 
 namespace Defra.Lis.Be4Fe.Api.Foundation.Submissions;
 
+using Defra.Lis.Be4Fe.Models.Submissions;
+
 public interface ISubmissionRepository
 {
     Task<SubmissionDocument?> FindDraftAsync(string cph, CancellationToken cancellationToken = default);

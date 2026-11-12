@@ -42,15 +42,15 @@ public class ModuleEndpointsTest : IClassFixture<WebApplicationFactory<Program>>
         using var document = await JsonDocument.ParseAsync(stream, cancellationToken: TestContext.Current.CancellationToken);
 
         document.RootElement.GetProperty("info").GetProperty("title").GetString().ShouldBe("Cattle Register API");
-        document.RootElement.GetProperty("paths").TryGetProperty("/submission/start", out _).ShouldBeTrue();
-        document.RootElement.GetProperty("paths").TryGetProperty("/submission/{submissionId}/{animalId}/{section}", out _).ShouldBeTrue();
+        document.RootElement.GetProperty("paths").TryGetProperty("/submission/{county}/{parish}/{holding}/start", out _).ShouldBeTrue();
+        document.RootElement.GetProperty("paths").TryGetProperty("/submission/{submissionId}/{animalId}", out _).ShouldBeTrue();
 
-        var section = document.RootElement.GetProperty("paths").GetProperty("/submission/{submissionId}/{animalId}/{section}").GetProperty("get");
-        section.GetProperty("operationId").GetString().ShouldBe("GetAnimalSection");
-        section.GetProperty("summary").GetString().ShouldBe("Gets one section of an animal's data.");
-        section.GetProperty("responses").TryGetProperty("404", out _).ShouldBeTrue();
-        section.GetProperty("responses").TryGetProperty("401", out _).ShouldBeTrue();
-        section.GetProperty("security")[0].TryGetProperty("ApiKey", out _).ShouldBeTrue();
+        var animalOperation = document.RootElement.GetProperty("paths").GetProperty("/submission/{submissionId}/{animalId}").GetProperty("get");
+        animalOperation.GetProperty("operationId").GetString().ShouldBe("GetSubmissionAnimal");
+        animalOperation.GetProperty("summary").GetString().ShouldBe("Gets an animal's data.");
+        animalOperation.GetProperty("responses").TryGetProperty("404", out _).ShouldBeTrue();
+        animalOperation.GetProperty("responses").TryGetProperty("401", out _).ShouldBeTrue();
+        animalOperation.GetProperty("security")[0].TryGetProperty("ApiKey", out _).ShouldBeTrue();
 
         var apiKey = document.RootElement.GetProperty("components").GetProperty("securitySchemes").GetProperty("ApiKey");
         apiKey.GetProperty("type").GetString().ShouldBe("apiKey");

@@ -222,8 +222,8 @@ public sealed class DataEndpointsTest : IAsyncDisposable
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    private static List<UnallocatedEartag> Tags(params string[] eartags) =>
-        eartags.Select(eartag => new UnallocatedEartag { Eartag = eartag }).ToList();
+    private static List<UnallocatedEarTag> Tags(params string[] eartags) =>
+        eartags.Select(eartag => new UnallocatedEarTag { Eartag = eartag }).ToList();
 
     private static List<string?> EartagsIn(JsonDocument body, string property = "eartags") =>
         body.RootElement.GetProperty(property).EnumerateArray().Select(item => item.GetProperty("eartag").GetString()).ToList();
@@ -247,7 +247,7 @@ public sealed class DataEndpointsTest : IAsyncDisposable
         Cph = cph,
         CreatedDate = DateTime.UtcNow,
         Status = SubmissionStatus.Draft,
-        Animals = animalIds.Select(id => new SubmissionAnimalDocument { AnimalId = id, Status = AnimalStatus.Draft }).ToList(),
+        Animals = animalIds.Select(id => new SubmissionAnimalDocument { AnimalId = id, Status = ItemStatus.Draft }).ToList(),
     };
 
     private async Task<JsonDocument> GetJsonAsync(string url)
@@ -296,13 +296,13 @@ public sealed class DataEndpointsTest : IAsyncDisposable
 
     private sealed class StubUnallocatedEarTagSource : IUnallocatedEarTagSource
     {
-        public IReadOnlyCollection<UnallocatedEartag> Eartags { get; set; } = [];
+        public IReadOnlyCollection<UnallocatedEarTag> Eartags { get; set; } = [];
 
         public Exception? FailWith { get; set; }
 
         public List<string> RequestedCphs { get; } = [];
 
-        public Task<IReadOnlyCollection<UnallocatedEartag>> GetUnallocatedEarTagAsync(string cph, CancellationToken cancellationToken = default)
+        public Task<IReadOnlyCollection<UnallocatedEarTag>> GetUnallocatedEarTagAsync(string cph, CancellationToken cancellationToken = default)
         {
             RequestedCphs.Add(cph);
 

@@ -4,6 +4,7 @@
 
 namespace Defra.Lis.Be4Fe.Api.Endpoints.Submission;
 
+using System.Diagnostics.CodeAnalysis;
 using Defra.Lis.Be4Fe.Api.Authentication;
 using Defra.Lis.Be4Fe.Api.Services;
 using Defra.Lis.Be4Fe.Models.Submissions;
@@ -14,6 +15,10 @@ using Defra.Lis.Be4Fe.Models.Submissions;
 /// </summary>
 public static class SubmissionEndpoints
 {
+    [SuppressMessage(
+        "S1192",
+        "S1192:String literals should not be duplicated",
+        Justification = "I want the routes to be fully written.")]
     public static IEndpointRouteBuilder UseSubmissionEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app
@@ -21,38 +26,62 @@ public static class SubmissionEndpoints
             .RequireServiceToServiceAuthorization()
             .WithTags(OpenApiMetadata.Tag);
 
-        group.MapGet("/start", StartSubmission)
+        group.MapGet("/{county}/{parish}/{holding}", ListSubmissions)
+            .WithName(OpenApiMetadata.ListSubmissions.Name)
+            .WithSummary(OpenApiMetadata.ListSubmissions.Summary)
+            .WithDescription(OpenApiMetadata.ListSubmissions.Description)
+            .Produces<SubmissionListResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        group.MapGet("/{county}/{parish}/{holding}/start", StartSubmission)
             .WithName(OpenApiMetadata.StartSubmission.Name)
             .WithSummary(OpenApiMetadata.StartSubmission.Summary)
             .WithDescription(OpenApiMetadata.StartSubmission.Description)
-            .Produces<SubmissionSummaryResponse>(StatusCodes.Status200OK)
+            .Produces<SubmissionResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
-        group.MapGet("/{submissionId}/{animalId}/{section}", GetAnimalSection)
-            .WithName(OpenApiMetadata.GetAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.GetAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.GetAnimalSection.Description)
-            .Produces<AnimalSectionResponse>(StatusCodes.Status200OK)
+        group.MapGet("/{submissionId}", GetSubmission)
+            .WithName(OpenApiMetadata.GetSubmission.Name)
+            .WithSummary(OpenApiMetadata.GetSubmission.Summary)
+            .WithDescription(OpenApiMetadata.GetSubmission.Description)
+            .Produces<SubmissionResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapPost("/{submissionId}:update", UpdateAnimalSection)
-            .WithName(OpenApiMetadata.UpdateAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.UpdateAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.UpdateAnimalSection.Description)
+        group.MapGet("/{submissionId}/{animalId}", GetSubmissionAnimal)
+            .WithName(OpenApiMetadata.GetAnimal.Name)
+            .WithSummary(OpenApiMetadata.GetAnimal.Summary)
+            .WithDescription(OpenApiMetadata.GetAnimal.Description)
+            .Produces<AnimalResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
+        group.MapPost("/{submissionId}/{animalId}", UpsertSubmissionAnimal)
+            .WithName(OpenApiMetadata.UpsertAnimal.Name)
+            .WithSummary(OpenApiMetadata.UpsertAnimal.Summary)
+            .WithDescription(OpenApiMetadata.UpsertAnimal.Description)
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapDelete("/{submissionId}/{animalId}", DeleteAnimal)
+        group.MapPatch("/{submissionId}/{animalId}", UpsertSubmissionAnimal)
+            .WithName(OpenApiMetadata.PatchAnimal.Name)
+            .WithSummary(OpenApiMetadata.PatchAnimal.Summary)
+            .WithDescription(OpenApiMetadata.PatchAnimal.Description)
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
+        group.MapDelete("/{submissionId}/{animalId}", DeleteSubmissionAnimal)
             .WithName(OpenApiMetadata.DeleteAnimal.Name)
             .WithSummary(OpenApiMetadata.DeleteAnimal.Summary)
             .WithDescription(OpenApiMetadata.DeleteAnimal.Description)
             .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapPost("/{submissionId}:submit", SubmitSubmission)
+        group.MapPost("/{submissionId}", SubmitSubmission)
             .WithName(OpenApiMetadata.SubmitSubmission.Name)
             .WithSummary(OpenApiMetadata.SubmitSubmission.Summary)
             .WithDescription(OpenApiMetadata.SubmitSubmission.Description)
@@ -62,50 +91,62 @@ public static class SubmissionEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status503ServiceUnavailable);
 
-        group.MapGet(string.Empty, ListSubmissions)
-            .WithName(OpenApiMetadata.ListSubmissions.Name)
-            .WithSummary(OpenApiMetadata.ListSubmissions.Summary)
-            .WithDescription(OpenApiMetadata.ListSubmissions.Description)
-            .Produces<SubmissionListResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
-
         return app;
     }
 
-    private static async Task<IResult> StartSubmission(
-        string? cph,
+    private static async Task<IResult> ListSubmissions(
+        string county,
+        string parish,
+        string holding,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
+        var cph = $"{county}/{parish}/{holding}";
+        return TypedResults.Ok(await submissionService.ListAsync(cph, cancellationToken));
+    }
+
+    private static async Task<IResult> StartSubmission(
+        string county,
+        string parish,
+        string holding,
+        ISubmissionService submissionService,
+        CancellationToken cancellationToken)
+    {
+        var cph = $"{county}/{parish}/{holding}";
         return TypedResults.Ok(await submissionService.StartAsync(cph, cancellationToken));
     }
 
-    private static async Task<IResult> GetAnimalSection(
+    private static async Task<IResult> GetSubmission(
         string submissionId,
-        string animalId,
-        string section,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(await submissionService.GetSectionAsync(submissionId, animalId, section, cancellationToken));
+        return TypedResults.Ok(await submissionService.GetSubmissionAsync(submissionId, cancellationToken));
     }
 
-    private static async Task<IResult> UpdateAnimalSection(
+    private static async Task<IResult> GetSubmissionAnimal(
         string submissionId,
-        UpdateAnimalSectionRequest? request,
+        string animalId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        if (request is null)
-        {
-            throw new ArgumentException("A request body is required.", nameof(request));
-        }
+        return TypedResults.Ok(await submissionService.GetAnimalAsync(submissionId, animalId, cancellationToken));
+    }
 
-        await submissionService.UpdateSectionAsync(submissionId, request, cancellationToken);
+    private static async Task<IResult> UpsertSubmissionAnimal(
+        string submissionId,
+        string animalId,
+        AnimalRequest? request,
+        ISubmissionService submissionService,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        await submissionService.UpsertAnimalAsync(submissionId, animalId, request, cancellationToken);
         return TypedResults.Ok();
     }
 
-    private static async Task<IResult> DeleteAnimal(
+    private static async Task<IResult> DeleteSubmissionAnimal(
         string submissionId,
         string animalId,
         ISubmissionService submissionService,
@@ -122,13 +163,5 @@ public static class SubmissionEndpoints
     {
         await submissionService.SubmitAsync(submissionId, cancellationToken);
         return TypedResults.Ok();
-    }
-
-    private static async Task<IResult> ListSubmissions(
-        string? cph,
-        ISubmissionService submissionService,
-        CancellationToken cancellationToken)
-    {
-        return TypedResults.Ok(await submissionService.ListAsync(cph, cancellationToken));
     }
 }

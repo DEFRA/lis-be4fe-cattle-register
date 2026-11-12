@@ -52,7 +52,7 @@ public sealed partial class DataService(
 
     private static ParentAnimal ToParentAnimal(CattleSummary cattle) => new()
     {
-        Eartag = cattle.Eartag,
+        EarTag = cattle.Eartag,
         Breed = cattle.BreedName ?? (string.IsNullOrWhiteSpace(cattle.Breed) ? null : cattle.Breed),
         BreedCode = cattle.BreedCode,
         DateOfBirth = cattle.DateOfBirth,

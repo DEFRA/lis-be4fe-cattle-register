@@ -18,72 +18,54 @@ public sealed partial class SubmissionService(
 {
     private const int MaxCreateDraftAttempts = 3;
 
-    public async Task<SubmissionSummaryResponse> StartAsync(string? cph, CancellationToken cancellationToken = default)
+    public async Task<SubmissionResponse> StartAsync(string? cph, CancellationToken cancellationToken = default)
     {
-        var normalisedCph = NormaliseCph(cph);
+        var normalisedCph = CphQueryParameter.Normalise(cph);
 
         var draft = await repository.FindDraftAsync(normalisedCph, cancellationToken);
         draft ??= await CreateDraftAsync(normalisedCph, cancellationToken);
 
-        return new SubmissionSummaryResponse
-        {
-            SubmissionId = draft.HashId,
-            CreatedDate = ToUtcOffset(draft.CreatedDate),
-            Animals = ToAnimalSummaries(draft),
-        };
+        return draft.ToSubmissionResponse();
     }
 
-    public async Task<AnimalSectionResponse> GetSectionAsync(string submissionId, string animalId, string section, CancellationToken cancellationToken = default)
+    public async Task<SubmissionResponse> GetSubmissionAsync(string submissionId, CancellationToken cancellationToken = default)
+    {
+        var submission = await GetRequiredAsync(submissionId, cancellationToken);
+        return submission.ToSubmissionResponse();
+    }
+
+    public async Task<AnimalResponse> GetAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default)
     {
         var submission = await GetRequiredAsync(submissionId, cancellationToken);
         var normalisedAnimalId = animalId.Trim();
-        var normalisedSection = section.Trim().ToUpperInvariant();
 
-        var stored = submission.Animals
-            .FirstOrDefault(animal => animal.AnimalId == normalisedAnimalId)?
-            .Sections.FirstOrDefault(candidate => candidate.Section == normalisedSection);
+        var stored = submission
+            .Animals
+            .FirstOrDefault(animal => animal.AnimalId == normalisedAnimalId)
+            ?? throw new NotFoundException($"Animal '{normalisedAnimalId}' was not found in submission '{submissionId}'.");
 
-        return new AnimalSectionResponse
-        {
-            AnimalId = normalisedAnimalId,
-            Section = normalisedSection,
-            Data = (stored?.Data ?? [])
-                .Select(item => new DataItem { Key = item.Key, Value = item.Value, Type = item.Type })
-                .ToArray(),
-        };
+        return stored.ToAnimalResponse();
     }
 
-    public async Task UpdateSectionAsync(string submissionId, UpdateAnimalSectionRequest request, CancellationToken cancellationToken = default)
+    public async Task UpsertAnimalAsync(
+        string submissionId,
+        string animalId,
+        AnimalRequest request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.AnimalId);
-        ArgumentException.ThrowIfNullOrWhiteSpace(request.Section);
 
-        var data = ToStoredData(request.Data);
-        var status = ToStoredAnimalStatus(request.Status);
         var submission = await GetRequiredDraftAsync(submissionId, cancellationToken);
-        var animalId = request.AnimalId.Trim();
-        var sectionName = request.Section.Trim().ToUpperInvariant();
+        var normalisedAnimalId = animalId.Trim();
 
-        var animal = submission.Animals.FirstOrDefault(candidate => candidate.AnimalId == animalId);
-        if (animal is null)
+        if (string.IsNullOrWhiteSpace(normalisedAnimalId))
         {
-            animal = new SubmissionAnimalDocument { AnimalId = animalId, Status = AnimalStatus.Draft };
-            submission.Animals.Add(animal);
+            throw new ArgumentException("An animal id is required.", nameof(animalId));
         }
 
-        animal.Status = status ?? animal.Status;
-
-        var section = animal.Sections.FirstOrDefault(candidate => candidate.Section == sectionName);
-        if (section is null)
-        {
-            animal.Sections.Add(new SubmissionSectionDocument { Section = sectionName, Data = data });
-        }
-        else
-        {
-            section.Data = data;
-        }
-
+        var animal = request.ToSubmissionAnimalDocument(normalisedAnimalId);
+        submission.Animals.RemoveAll(candidate => candidate.AnimalId == normalisedAnimalId);
+        submission.Animals.Add(animal);
         await SaveAsync(submission, cancellationToken);
     }
 
@@ -131,80 +113,19 @@ public sealed partial class SubmissionService(
 
     public async Task<SubmissionListResponse> ListAsync(string? cph, CancellationToken cancellationToken = default)
     {
-        var submissions = await repository.ListAsync(NormaliseCph(cph), cancellationToken);
+        var submissions = await repository
+            .ListAsync(
+                CphQueryParameter.Normalise(cph),
+                cancellationToken);
 
         return new SubmissionListResponse
         {
-            Submissions = submissions
-                .Select(submission => new SubmissionListItem
-                {
-                    SubmissionId = submission.HashId,
-                    AnimalCount = submission.Animals.Count,
-                    Animals = ToAnimalSummaries(submission),
-                    Status = submission.Status,
-                    CreatedDate = ToUtcOffset(submission.CreatedDate),
-                    SubmittedDate = submission.SubmittedDate is { } submitted ? ToUtcOffset(submitted) : null,
-                })
-                .ToList(),
+            Submissions =
+            [
+                .. submissions
+                    .Select(submission => submission.ToSubmissionResponse()),
+            ],
         };
-    }
-
-    private static string NormaliseCph(string? cph) => CphQueryParameter.Normalise(cph);
-
-    private static DateTimeOffset ToUtcOffset(DateTime value) =>
-        new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
-
-    private static List<SubmissionAnimalSummary> ToAnimalSummaries(SubmissionDocument submission) =>
-        submission.Animals
-            .Select(animal => new SubmissionAnimalSummary { AnimalId = animal.AnimalId, Status = animal.Status })
-            .ToList();
-
-    private static string? ToStoredAnimalStatus(string? status)
-    {
-        if (status is null)
-        {
-            return null;
-        }
-
-        var normalised = status.Trim().ToUpperInvariant();
-
-        return AnimalStatus.IsSupported(normalised)
-            ? normalised
-            : throw new ArgumentException($"The animal status must be {AnimalStatus.Draft} or {AnimalStatus.Complete}.", nameof(status));
-    }
-
-    private static List<SubmissionDataItemDocument> ToStoredData(DataItem[]? data)
-    {
-        if (data is null)
-        {
-            throw new ArgumentException("Data must be an array of key, value and type items.", nameof(data));
-        }
-
-        var stored = new List<SubmissionDataItemDocument>(data.Length);
-        var keys = new HashSet<string>(StringComparer.Ordinal);
-
-        foreach (var item in data)
-        {
-            if (item is null || string.IsNullOrWhiteSpace(item.Key))
-            {
-                throw new ArgumentException("Every data item needs a key.", nameof(data));
-            }
-
-            var type = item.Type.Trim().ToUpperInvariant();
-            if (!PropertyTypes.IsSupported(type))
-            {
-                throw new ArgumentException($"Data item '{item.Key}' has an unsupported type '{item.Type}'.", nameof(data));
-            }
-
-            if (!keys.Add(item.Key))
-            {
-                throw new ArgumentException($"Data item '{item.Key}' appears more than once.", nameof(data));
-            }
-
-            stored.Add(new SubmissionDataItemDocument { Key = item.Key, Value = item.Value, Type = type });
-        }
-
-        return stored;
     }
 
     private async Task<SubmissionDocument> CreateDraftAsync(string cph, CancellationToken cancellationToken)
