@@ -36,7 +36,7 @@ public sealed class NotConfiguredUnallocatedEarTagSource(
         [
             .. tags
                 .Where(t => string.Equals(t.Cph, cph, StringComparison.OrdinalIgnoreCase))
-                .Select(x => new UnallocatedEarTag { Eartag = x.Tag ?? string.Empty })
+                .Select(x => new UnallocatedEarTag { Eartag = x.Tag ?? string.Empty }),
         ]);
     }
 

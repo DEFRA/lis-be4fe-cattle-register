@@ -17,7 +17,7 @@ public static class SubmissionAnimalDocumentExtensions
                 Data =
                 [
                     .. (source.Data ?? [])
-                    .Select(item => item.ToDataItem())
+                    .Select(item => item.ToDataItem()),
                 ],
             };
         }

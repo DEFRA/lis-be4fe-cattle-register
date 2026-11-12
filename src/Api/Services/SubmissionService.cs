@@ -123,7 +123,7 @@ public sealed partial class SubmissionService(
             Submissions =
             [
                 .. submissions
-                    .Select(submission => submission.ToSubmissionResponse())
+                    .Select(submission => submission.ToSubmissionResponse()),
             ],
         };
     }

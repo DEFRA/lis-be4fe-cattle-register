@@ -31,7 +31,7 @@ public static class SubmissionDocumentExtensions
                     {
                         AnimalId = animal.AnimalId,
                         Status = animal.Status,
-                    })
+                    }),
             ];
         }
     }
