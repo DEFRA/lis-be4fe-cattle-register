@@ -37,9 +37,9 @@ public sealed class ServiceToServiceEndpointsTest : IClassFixture<ServiceToServi
     }
 
     [Theory]
-    [InlineData("/submission")]
-    [InlineData("/submission/start")]
-    [InlineData("/submission/1234/UK200000000001/details")]
+    [InlineData("/submission/12/345/6789")]
+    [InlineData("/submission/12/345/6789/start")]
+    [InlineData("/submission/1234/UK200000000001")]
     public async Task ApiRequestWithoutTheKeyShouldBeRejected(string path)
     {
         var response = await CreateCorrelatedClient().GetAsync(path, TestContext.Current.CancellationToken);
@@ -51,7 +51,7 @@ public sealed class ServiceToServiceEndpointsTest : IClassFixture<ServiceToServi
     [Fact]
     public async Task ApiRequestWithTheWrongKeyShouldBeRejected()
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, "/submission/start");
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/submission/12/345/6789/start");
         request.Headers.Add("x-api-key", "not-the-key");
 
         var response = await CreateCorrelatedClient().SendAsync(request, TestContext.Current.CancellationToken);

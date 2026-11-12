@@ -40,5 +40,5 @@ public static class SubmissionDocumentExtensions
         new(DateTime.SpecifyKind(value, DateTimeKind.Utc));
 
     private static DateTimeOffset? ToUtcOffset(DateTime? value) =>
-        value == null ? new DateTimeOffset(DateTime.SpecifyKind(value.GetValueOrDefault(), DateTimeKind.Utc)) : null;
+        value.HasValue ? ToUtcOffset(value.Value) : null;
 }

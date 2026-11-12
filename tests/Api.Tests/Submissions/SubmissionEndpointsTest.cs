@@ -30,11 +30,11 @@ using MongoDB.Bson.Serialization;
 public sealed class SubmissionEndpointsTest : IAsyncDisposable
 {
     private const string Cph = "12/345/6789";
-    private const string StartUrl = "/submission/start?cph=12/345/6789";
-    private const string ListUrl = "/submission?cph=12/345/6789";
+    private const string StartUrl = "/submission/12/345/6789/start";
+    private const string ListUrl = "/submission/12/345/6789";
     private const string Animal = "UK123123123";
 
-    private readonly BirthFactory factory = new();
+    private readonly SubmissionFactory factory = new();
     private readonly HttpClient client;
 
     public SubmissionEndpointsTest()
@@ -56,20 +56,21 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         body.RootElement.GetProperty("submission-id").GetString().ShouldNotBeNullOrWhiteSpace();
         body.RootElement.TryGetProperty("created-date", out _).ShouldBeTrue();
         body.RootElement.GetProperty("animals").GetArrayLength().ShouldBe(0);
+        body.RootElement.TryGetProperty("submitted-date", out _).ShouldBeFalse();
     }
 
     [Fact]
     public async Task StartShouldReturnTheExistingDraftWithItsAnimals()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", """[{"key":"dob","value":"2026-11-01","type":"DATE"}]""");
+        await UpdateAsync(id, Animal, """[{"key":"dob","value":"2026-11-01","type":"DATE"}]""");
 
         using var body = await GetJsonAsync(StartUrl);
 
         body.RootElement.GetProperty("submission-id").GetString().ShouldBe(id);
         var animal = body.RootElement.GetProperty("animals").EnumerateArray().ShouldHaveSingleItem();
         animal.GetProperty("animal-id").GetString().ShouldBe(Animal);
-        animal.GetProperty("status").GetString().ShouldBe("DRAFT");
+        animal.GetProperty("status").GetString().ShouldBe("draft");
     }
 
     [Fact]
@@ -77,7 +78,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var first = await StartAsync();
 
-        using var other = await GetJsonAsync("/submission/start?cph=98/765/4321");
+        using var other = await GetJsonAsync("/submission/98/765/4321/start");
 
         other.RootElement.GetProperty("submission-id").GetString().ShouldNotBe(first);
     }
@@ -137,18 +138,18 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task EveryResponseShouldUseTheHashIdAndNeverTheGuid()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
         var guid = factory.Repository.Stored.ShouldHaveSingleItem().Id;
 
         var start = await client.GetStringAsync(StartUrl, TestContext.Current.CancellationToken);
         var list = await client.GetStringAsync(ListUrl, TestContext.Current.CancellationToken);
-        var section = await client.GetStringAsync($"/submission/{id}/{Animal}/details", TestContext.Current.CancellationToken);
+        var animalResponse = await client.GetStringAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
 
         start.ShouldContain(id);
         list.ShouldContain(id);
         start.ShouldNotContain(guid);
         list.ShouldNotContain(guid);
-        section.ShouldNotContain(guid);
+        animalResponse.ShouldNotContain(guid);
     }
 
     [Fact]
@@ -157,9 +158,9 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         await StartAsync();
         var guid = factory.Repository.Stored.ShouldHaveSingleItem().Id;
 
-        var get = await client.GetAsync($"/submission/{guid}/{Animal}/details", TestContext.Current.CancellationToken);
-        var update = await PostAsync($"/submission/{guid}:update", UpdatePayload(Animal, "DETAILS", "[]"));
-        var submit = await PostAsync($"/submission/{guid}:submit");
+        var get = await client.GetAsync($"/submission/{guid}/{Animal}", TestContext.Current.CancellationToken);
+        var update = await PostAsync($"/submission/{guid}/{Animal}", UpdatePayload("[]"));
+        var submit = await PostAsync($"/submission/{guid}");
 
         get.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         update.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -171,7 +172,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id.ToLowerInvariant()}:update", UpdatePayload(Animal, "DETAILS", "[]"));
+        var response = await PostAsync($"/submission/{id.ToLowerInvariant()}/{Animal}", UpdatePayload("[]"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -216,39 +217,37 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         };
         await StartAsync();
 
-        var response = await client.GetAsync($"/submission/oil-abc-def/{Animal}/details", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"/submission/oil-abc-def", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Theory]
-    [InlineData("/submission/start")]
-    [InlineData("/submission/start?cph=not-a-cph")]
-    [InlineData("/submission")]
-    [InlineData("/submission?cph=")]
+    [InlineData("/submission/1/2/3/start")]
+    [InlineData("/submission/aa/bbb/cccc")]
     public async Task EndpointsScopedToACphShouldRejectAMissingOrInvalidCph(string url)
     {
         var response = await client.GetAsync(url, TestContext.Current.CancellationToken);
-
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task GetSectionShouldReturnEmptyDataWhenNothingIsStored()
+    public async Task GetAnimalShouldReturnEmptyDataWhenSavedWithoutData()
     {
         var id = await StartAsync();
+        await UpdateAsync(id, Animal, "[]");
 
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}/details");
+        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
 
         body.RootElement.GetProperty("animal-id").GetString().ShouldBe(Animal);
-        body.RootElement.GetProperty("section").GetString().ShouldBe("DETAILS");
+        body.RootElement.GetProperty("status").GetString().ShouldBe("draft");
         body.RootElement.GetProperty("data").GetArrayLength().ShouldBe(0);
     }
 
     [Fact]
-    public async Task GetSectionShouldReturn404ForAnUnknownSubmission()
+    public async Task GetAnimalShouldReturn404ForAnUnknownSubmission()
     {
-        var response = await client.GetAsync($"/submission/unknown/{Animal}/details", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"/submission/unknown/{Animal}", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -258,9 +257,9 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        await UpdateAsync(id, Animal, "details", """[{"key":"dateOfBirth","value":"2026-11-01","type":"DATE"},{"key":"weight","value":"42","type":"NUMBER"}]""");
+        await UpdateAsync(id, Animal, """[{"key":"dateOfBirth","value":"2026-11-01","type":"DATE"},{"key":"weight","value":"42","type":"NUMBER"}]""");
 
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}/DETAILS");
+        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
         var items = body.RootElement.GetProperty("data").EnumerateArray().ToList();
         items.Count.ShouldBe(2);
         items[0].GetProperty("key").GetString().ShouldBe("dateOfBirth");
@@ -282,60 +281,64 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        await UpdateAsync(id, Animal, "DETAILS", $$"""[{"key":"k","value":"v","type":"{{type}}"}]""");
+        await UpdateAsync(id, Animal, $$"""[{"key":"k","value":"v","type":"{{type}}"}]""");
 
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}/details");
+        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
         body.RootElement.GetProperty("data")[0].GetProperty("type").GetString().ShouldBe(type.ToUpperInvariant());
     }
 
     [Fact]
-    public async Task UpdateShouldReplaceASectionAndLeaveTheOthersAlone()
+    public async Task UpdateShouldReplaceAllDataAndLeaveOtherAnimalsAlone()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", """[{"key":"a","value":"first","type":"STRING"},{"key":"b","value":"gone","type":"STRING"}]""");
-        await UpdateAsync(id, Animal, "DAM", """[{"key":"a","value":"dam","type":"STRING"}]""");
+        await UpdateAsync(id, Animal, """[{"key":"a","value":"first","type":"STRING"},{"key":"b","value":"gone","type":"STRING"}]""");
+        await UpdateAsync(id, "UK2", """[{"key":"a","value":"kept","type":"STRING"}]""");
 
-        await UpdateAsync(id, Animal, "DETAILS", """[{"key":"a","value":"second","type":"STRING"}]""");
+        await UpdateAsync(id, Animal, """[{"key":"a","value":"second","type":"STRING"}]""");
 
-        using var details = await GetJsonAsync($"/submission/{id}/{Animal}/details");
-        var item = details.RootElement.GetProperty("data").EnumerateArray().ShouldHaveSingleItem();
+        using var updatedAnimal = await GetJsonAsync($"/submission/{id}/{Animal}");
+        var item = updatedAnimal.RootElement.GetProperty("data").EnumerateArray().ShouldHaveSingleItem();
+        item.GetProperty("key").GetString().ShouldBe("a");
         item.GetProperty("value").GetString().ShouldBe("second");
-        using var dam = await GetJsonAsync($"/submission/{id}/{Animal}/dam");
-        dam.RootElement.GetProperty("data")[0].GetProperty("value").GetString().ShouldBe("dam");
+        using var otherAnimal = await GetJsonAsync($"/submission/{id}/UK2");
+        otherAnimal.RootElement.GetProperty("data")[0].GetProperty("value").GetString().ShouldBe("kept");
     }
 
     [Theory]
-    [InlineData("""{"section":"DETAILS","data":[]}""")]
-    [InlineData("""{"id":"UK1","section":"DETAILS","data":[]}""")]
-    [InlineData("""{"animal-id":"UK1","data":[]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS"}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":"text"}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":{"key":"k"}}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[null]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"value":"v","type":"STRING"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"key":" ","value":"v","type":"STRING"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"key":"k","type":"STRING"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"key":"k","value":1,"type":"INT"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"key":"k","value":"v"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"key":"k","value":"v","type":"OTHER"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","data":[{"key":"k","value":"v","type":"STRING"},{"key":"k","value":"w","type":"STRING"}]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","status":"OTHER","data":[]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","status":" ","data":[]}""")]
-    [InlineData("""{"animal-id":"UK1","section":"DETAILS","status":1,"data":[]}""")]
+    [InlineData("""{"data":[]}""")]
+    [InlineData("""{"status":"DRAFT"}""")]
+    [InlineData("""{"status":"DRAFT","data":"text"}""")]
+    [InlineData("""{"status":"DRAFT","data":{"key":"k"}}""")]
+    [InlineData("""{"status":"DRAFT","data":[null]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"value":"v","type":"STRING"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":" ","value":"v","type":"STRING"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","type":"STRING"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":1,"type":"INT"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":"v"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":"v","type":"OTHER"}]}""")]
+    [InlineData("""{"status":"DRAFT","data":[{"key":"k","value":"v","type":"STRING"},{"key":"k","value":"w","type":"STRING"}]}""")]
+    [InlineData("""{"status":"OTHER","data":[]}""")]
+    [InlineData("""{"status":" ","data":[]}""")]
+    [InlineData("""{"status":1,"data":[]}""")]
+    [InlineData("""{"status":0,"data":[]}""")]
+    [InlineData("""{"status":999,"data":[]}""")]
+    [InlineData("""{"status":"0","data":[]}""")]
+    [InlineData("""{"status":"999","data":[]}""")]
+    [InlineData("""{"status":null,"data":[]}""")]
     [InlineData("null")]
     public async Task UpdateShouldRejectAnInvalidPayload(string payload)
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id}:update", payload);
+        var response = await PostAsync($"/submission/{id}/{Animal}", payload);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
     [Theory]
-    [InlineData("COMPLETE", "COMPLETE")]
-    [InlineData("complete", "COMPLETE")]
-    [InlineData("DRAFT", "DRAFT")]
+    [InlineData("COMPLETE", "complete")]
+    [InlineData("complete", "complete")]
+    [InlineData("DRAFT", "draft")]
     public async Task UpdateShouldSetTheStatusOfANewAnimal(string status, string expected)
     {
         var id = await StartAsync();
@@ -346,49 +349,49 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     }
 
     [Fact]
-    public async Task UpdateShouldMakeANewAnimalADraftWhenNoStatusIsGiven()
+    public async Task UpdateShouldSaveANewAnimalWithDraftStatus()
     {
         var id = await StartAsync();
 
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
 
-        (await GetAnimalStatusAsync(Animal)).ShouldBe("DRAFT");
+        (await GetAnimalStatusAsync(Animal)).ShouldBe("draft");
     }
 
     [Fact]
     public async Task UpdateShouldChangeTheStatusOfAnExistingAnimalInBothDirections()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
 
         await PostUpdateWithStatusAsync(id, Animal, "COMPLETE");
-        (await GetAnimalStatusAsync(Animal)).ShouldBe("COMPLETE");
+        (await GetAnimalStatusAsync(Animal)).ShouldBe("complete");
 
         await PostUpdateWithStatusAsync(id, Animal, "DRAFT");
-        (await GetAnimalStatusAsync(Animal)).ShouldBe("DRAFT");
+        (await GetAnimalStatusAsync(Animal)).ShouldBe("draft");
     }
 
     [Fact]
-    public async Task UpdateShouldKeepTheStatusWhenNoneIsGiven()
+    public async Task UpdateShouldReplaceTheExistingStatusWithDraft()
     {
         var id = await StartAsync();
         await PostUpdateWithStatusAsync(id, Animal, "COMPLETE");
 
-        await UpdateAsync(id, Animal, "DAM", "[]");
+        await UpdateAsync(id, Animal, "[]");
 
-        (await GetAnimalStatusAsync(Animal)).ShouldBe("COMPLETE");
+        (await GetAnimalStatusAsync(Animal)).ShouldBe("draft");
     }
 
     [Fact]
     public async Task UpdateShouldOnlyChangeTheStatusOfTheAnimalInTheRequest()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, "UK1", "DETAILS", "[]");
+        await UpdateAsync(id, "UK1", "[]");
 
         await PostUpdateWithStatusAsync(id, "UK2", "COMPLETE");
 
-        (await GetAnimalStatusAsync("UK1")).ShouldBe("DRAFT");
-        (await GetAnimalStatusAsync("UK2")).ShouldBe("COMPLETE");
+        (await GetAnimalStatusAsync("UK1")).ShouldBe("draft");
+        (await GetAnimalStatusAsync("UK2")).ShouldBe("complete");
     }
 
     [Fact]
@@ -396,7 +399,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id}:update", $$"""{"animal-id":"{{Animal}}","section":"DETAILS","status":"OTHER","data":[]}""");
+        var response = await PostAsync($"/submission/{id}/{Animal}", $$"""{"status":"OTHER","data":[]}""");
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldBeEmpty();
@@ -405,7 +408,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Fact]
     public async Task UpdateShouldReturn404ForAnUnknownSubmission()
     {
-        var response = await PostAsync("/submission/unknown:update", UpdatePayload(Animal, "DETAILS", "[]"));
+        var response = await PostAsync($"/submission/unknown/{Animal}", UpdatePayload("[]"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -416,33 +419,32 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         factory.Repository.RejectNextReplace = true;
 
-        var response = await PostAsync($"/submission/{id}:update", UpdatePayload(Animal, "DETAILS", "[]"));
+        var response = await PostAsync($"/submission/{id}/{Animal}", UpdatePayload("[]"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
 
     [Fact]
-    public async Task DeleteAnimalShouldRemoveTheAnimalAndItsSectionsAndLeaveTheOthersAlone()
+    public async Task DeleteAnimalShouldRemoveTheAnimalAndItsDataAndLeaveTheOthersAlone()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, "UK1", "DETAILS", """[{"key":"a","value":"gone","type":"STRING"}]""");
-        await UpdateAsync(id, "UK1", "DAM", """[{"key":"a","value":"gone","type":"STRING"}]""");
-        await UpdateAsync(id, "UK2", "DETAILS", """[{"key":"a","value":"kept","type":"STRING"}]""");
+        await UpdateAsync(id, "UK1", """[{"key":"a","value":"gone","type":"STRING"}]""");
+        await UpdateAsync(id, "UK2", """[{"key":"a","value":"kept","type":"STRING"}]""");
 
         var response = await client.DeleteAsync($"/submission/{id}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var animal = factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem();
         animal.AnimalId.ShouldBe("UK2");
-        using var section = await GetJsonAsync($"/submission/{id}/UK2/details");
-        section.RootElement.GetProperty("data")[0].GetProperty("value").GetString().ShouldBe("kept");
+        using var animalResponse = await GetJsonAsync($"/submission/{id}/UK2");
+        animalResponse.RootElement.GetProperty("data")[0].GetProperty("value").GetString().ShouldBe("kept");
     }
 
     [Fact]
     public async Task DeleteAnimalShouldLeaveAnEmptyDraftWhenItRemovesTheLastAnimal()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
 
         await client.DeleteAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
 
@@ -457,7 +459,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task DeleteAnimalShouldReturn404ForAnUnknownSubmissionOrAnimal(string submission, string animalId)
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
 
         var response = await client.DeleteAsync($"/submission/{submission.Replace("{id}", id, StringComparison.Ordinal)}/{animalId}", TestContext.Current.CancellationToken);
 
@@ -469,8 +471,8 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task DeleteAnimalShouldReturn409OnceSubmitted()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
-        await PostAsync($"/submission/{id}:submit");
+        await UpdateAsync(id, Animal, "[]");
+        await PostAsync($"/submission/{id}");
 
         var response = await client.DeleteAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
 
@@ -482,7 +484,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task DeleteAnimalShouldReturn409WhenAnotherRequestChangedTheSubmission()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
         factory.Repository.RejectNextReplace = true;
 
         var response = await client.DeleteAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
@@ -495,7 +497,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task DeleteAnimalShouldNotFindASubmissionByItsGuid()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
         var guid = factory.Repository.Stored.ShouldHaveSingleItem().Id;
 
         var response = await client.DeleteAsync($"/submission/{guid}/{Animal}", TestContext.Current.CancellationToken);
@@ -507,24 +509,24 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task SubmitShouldTransferTheSubmissionAndMarkItSubmitted()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
 
-        var response = await PostAsync($"/submission/{id}:submit");
+        var response = await PostAsync($"/submission/{id}");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         factory.Transfer.TransferredIds.ShouldBe([id]);
         using var list = await GetJsonAsync(ListUrl);
         var item = list.RootElement.GetProperty("submissions").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("status").GetString().ShouldBe("SUBMITTED");
-        item.TryGetProperty("submitted-date", out _).ShouldBeTrue();
+        item.GetProperty("submitted-date").GetDateTimeOffset().ShouldBe(factory.Repository.Stored.ShouldHaveSingleItem().SubmittedDate!.Value);
     }
 
     [Fact]
     public async Task StartShouldCreateANewDraftOnceTheLastOneIsSubmitted()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
-        await PostAsync($"/submission/{id}:submit");
+        await UpdateAsync(id, Animal, "[]");
+        await PostAsync($"/submission/{id}");
 
         var next = await StartAsync();
 
@@ -535,15 +537,15 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task SubmitShouldLeaveTheSubmissionADraftWhenTheTransferFails()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
+        await UpdateAsync(id, Animal, "[]");
         factory.Transfer.FailWith = new ServiceUnavailableException("Unavailable", new HttpRequestException());
 
-        var response = await PostAsync($"/submission/{id}:submit");
+        var response = await PostAsync($"/submission/{id}");
 
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         using var list = await GetJsonAsync(ListUrl);
         var item = list.RootElement.GetProperty("submissions").EnumerateArray().ShouldHaveSingleItem();
-        item.GetProperty("status").GetString().ShouldBe("DRAFT");
+        item.GetProperty("status").GetString().ShouldBe(SubmissionStatus.Draft);
         item.TryGetProperty("submitted-date", out _).ShouldBeFalse();
     }
 
@@ -552,7 +554,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id}:submit");
+        var response = await PostAsync($"/submission/{id}");
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         factory.Transfer.TransferredIds.ShouldBeEmpty();
@@ -562,11 +564,11 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task SubmitAndUpdateShouldReturn409OnceSubmitted()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, Animal, "DETAILS", "[]");
-        await PostAsync($"/submission/{id}:submit");
+        await UpdateAsync(id, Animal, "[]");
+        await PostAsync($"/submission/{id}");
 
-        var submit = await PostAsync($"/submission/{id}:submit");
-        var update = await PostAsync($"/submission/{id}:update", UpdatePayload(Animal, "DETAILS", "[]"));
+        var submit = await PostAsync($"/submission/{id}");
+        var update = await PostAsync($"/submission/{id}/{Animal}", UpdatePayload("[]"));
 
         submit.StatusCode.ShouldBe(HttpStatusCode.Conflict);
         update.StatusCode.ShouldBe(HttpStatusCode.Conflict);
@@ -576,7 +578,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Fact]
     public async Task SubmitShouldReturn404ForAnUnknownSubmission()
     {
-        var response = await PostAsync("/submission/unknown:submit");
+        var response = await PostAsync("/submission/unknown");
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -585,17 +587,16 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task ListShouldReturnTheSubmissionsForTheCphWithTheAnimalCount()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, "UK1", "DETAILS", "[]");
-        await UpdateAsync(id, "UK1", "DAM", "[]");
-        await UpdateAsync(id, "UK2", "DETAILS", "[]");
-        await GetJsonAsync("/submission/start?cph=98/765/4321");
+        await UpdateAsync(id, "UK1", "[]");
+        await UpdateAsync(id, "UK2", "[]");
+        await GetJsonAsync("/submission/98/765/4321/start");
 
         using var list = await GetJsonAsync(ListUrl);
 
         var item = list.RootElement.GetProperty("submissions").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("submission-id").GetString().ShouldBe(id);
         item.GetProperty("animal-count").GetInt32().ShouldBe(2);
-        item.GetProperty("status").GetString().ShouldBe("DRAFT");
+        item.GetProperty("status").GetString().ShouldBe(SubmissionStatus.Draft);
         item.TryGetProperty("created-date", out _).ShouldBeTrue();
     }
 
@@ -603,15 +604,15 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task ListShouldReturnOnlyTheIdAndStatusOfEachAnimal()
     {
         var id = await StartAsync();
-        await UpdateAsync(id, "UK1", "DETAILS", """[{"key":"a","value":"private","type":"STRING"}]""");
-        await UpdateAsync(id, "UK2", "DAM", "[]");
+        await UpdateAsync(id, "UK1", """[{"key":"a","value":"private","type":"STRING"}]""");
+        await UpdateAsync(id, "UK2", "[]");
 
         using var list = await GetJsonAsync(ListUrl);
 
         var item = list.RootElement.GetProperty("submissions").EnumerateArray().ShouldHaveSingleItem();
         var animals = item.GetProperty("animals").EnumerateArray().ToList();
         animals.Select(animal => animal.GetProperty("animal-id").GetString()).ShouldBe(["UK1", "UK2"]);
-        animals.ShouldAllBe(animal => animal.GetProperty("status").GetString() == "DRAFT");
+        animals.ShouldAllBe(animal => animal.GetProperty("status").GetString() == "draft");
         animals.ShouldAllBe(animal => animal.EnumerateObject().Count() == 2);
     }
 
@@ -627,16 +628,16 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     }
 
     [Theory]
-    [InlineData("GET", "/submission")]
-    [InlineData("GET", "/submission/start")]
-    [InlineData("GET", "/submission/1/UK1/details")]
+    [InlineData("GET", "/submission/12/345/6789")]
+    [InlineData("GET", "/submission/12/345/6789/start")]
+    [InlineData("GET", "/submission/1/UK1")]
     [InlineData("DELETE", "/submission/1/UK1")]
-    [InlineData("POST", "/submission/1:update")]
-    [InlineData("POST", "/submission/1:submit")]
+    [InlineData("POST", "/submission/1/UK1")]
+    [InlineData("POST", "/submission/1")]
     public async Task EveryEndpointShouldRequireTheApiKey(string method, string url)
     {
         using var anonymous = factory.CreateClient();
-        anonymous.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, "corr-birth-test");
+        anonymous.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, "corr-submission-test");
         using var request = new HttpRequestMessage(new HttpMethod(method), url);
         if (method == "POST")
         {
@@ -652,15 +653,75 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task EndpointsShouldRequireTheCorrelationId()
     {
         using var uncorrelated = factory.CreateClient();
-        uncorrelated.DefaultRequestHeaders.Add(RequestHeaderNames.ApiKey, BirthFactory.ApiKey);
+        uncorrelated.DefaultRequestHeaders.Add(RequestHeaderNames.ApiKey, SubmissionFactory.ApiKey);
 
         var response = await uncorrelated.GetAsync(StartUrl, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
 
-    private static string UpdatePayload(string animalId, string section, string data) =>
-        $$"""{"animal-id":"{{animalId}}","section":"{{section}}","data":{{data}}}""";
+    [Fact]
+    public async Task GetSubmissionShouldReturnTheDraftAndItsAnimalSummary()
+    {
+        var id = await StartAsync();
+        await UpdateAsync(id, Animal, "[]");
+
+        using var body = await GetJsonAsync($"/submission/{id}");
+
+        body.RootElement.GetProperty("submission-id").GetString().ShouldBe(id);
+        body.RootElement.GetProperty("animal-count").GetInt32().ShouldBe(1);
+        body.RootElement.GetProperty("animals")[0].GetProperty("animal-id").GetString().ShouldBe(Animal);
+    }
+
+    [Fact]
+    public async Task GetAnimalShouldReturn404ForAnUnknownAnimal()
+    {
+        var id = await StartAsync();
+        var response = await client.GetAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task PatchShouldReplaceTheAnimalData()
+    {
+        var id = await StartAsync();
+        await UpdateAsync(id, Animal, "[]");
+        using var content = new StringContent("""{"status":"complete","data":[{"key":"weight","value":"42","type":"number"}]}""", Encoding.UTF8, "application/json");
+        var response = await client.PatchAsync($"/submission/{id}/{Animal}", content, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        body.RootElement.GetProperty("status").GetString().ShouldBe("complete");
+        body.RootElement.GetProperty("data")[0].GetProperty("type").GetString().ShouldBe("NUMBER");
+    }
+
+    [Theory]
+    [InlineData("POST", """{"status":"draft","data":null}""")]
+    [InlineData("PATCH", """{"status":"draft","data":[null]}""")]
+    [InlineData("POST", """{"status":"draft","data":[{"key":"k","value":null,"type":"STRING"}]}""")]
+    [InlineData("PATCH", """{"status":"draft","data":[{"key":"k","value":"v","type":null}]}""")]
+    [InlineData("POST", """{"status":"draft","data":[{"key":"k","value":"v","type":"OTHER"}]}""")]
+    [InlineData("PATCH", """{"status":"draft","data":[{"key":"k","value":"v","type":"STRING"},{"key":"k","value":"w","type":"STRING"}]}""")]
+    public async Task InvalidUpdatesShouldPreserveTheExistingAnimal(string method, string payload)
+    {
+        var id = await StartAsync();
+        await UpdateAsync(id, Animal, """[{"key":"original","value":"kept","type":"STRING"}]""");
+        using var request = new HttpRequestMessage(new HttpMethod(method), $"/submission/{id}/{Animal}")
+        {
+            Content = new StringContent(payload, Encoding.UTF8, "application/json"),
+        };
+
+        var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        using var animal = await GetJsonAsync($"/submission/{id}/{Animal}");
+        var item = animal.RootElement.GetProperty("data").EnumerateArray().ShouldHaveSingleItem();
+        item.GetProperty("key").GetString().ShouldBe("original");
+        item.GetProperty("value").GetString().ShouldBe("kept");
+    }
+
+    private static string UpdatePayload(string data) =>
+        $$"""{"status":"DRAFT","data":{{data}}}""";
 
     private async Task<JsonDocument> GetJsonAsync(string url)
     {
@@ -675,15 +736,15 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         return body.RootElement.GetProperty("submission-id").GetString()!;
     }
 
-    private async Task UpdateAsync(string id, string animalId, string section, string data)
+    private async Task UpdateAsync(string id, string animalId, string data)
     {
-        var response = await PostAsync($"/submission/{id}:update", UpdatePayload(animalId, section, data));
+        var response = await PostAsync($"/submission/{id}/{animalId}", UpdatePayload(data));
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     private async Task PostUpdateWithStatusAsync(string id, string animalId, string status)
     {
-        var response = await PostAsync($"/submission/{id}:update", $$"""{"animal-id":"{{animalId}}","section":"DETAILS","status":"{{status}}","data":[]}""");
+        var response = await PostAsync($"/submission/{id}/{animalId}", $$"""{"status":"{{status}}","data":[]}""");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
@@ -701,7 +762,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         return await client.PostAsync(url, content, TestContext.Current.CancellationToken);
     }
 
-    private sealed class BirthFactory : WebApplicationFactory<Program>
+    private sealed class SubmissionFactory : WebApplicationFactory<Program>
     {
         public const string ApiKey = "test-api-key";
 
@@ -713,7 +774,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         {
             var client = CreateClient();
             client.DefaultRequestHeaders.Add(RequestHeaderNames.ApiKey, ApiKey);
-            client.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, "corr-birth-test");
+            client.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, "corr-submission-test");
             return client;
         }
 

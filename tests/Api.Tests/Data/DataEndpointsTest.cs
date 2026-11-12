@@ -247,7 +247,7 @@ public sealed class DataEndpointsTest : IAsyncDisposable
         Cph = cph,
         CreatedDate = DateTime.UtcNow,
         Status = SubmissionStatus.Draft,
-        Animals = animalIds.Select(id => new SubmissionAnimalDocument { AnimalId = id, Status = AnimalStatus.Draft }).ToList(),
+        Animals = animalIds.Select(id => new SubmissionAnimalDocument { AnimalId = id, Status = ItemStatus.Draft }).ToList(),
     };
 
     private async Task<JsonDocument> GetJsonAsync(string url)

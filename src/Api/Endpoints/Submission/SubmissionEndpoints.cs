@@ -41,41 +41,41 @@ public static class SubmissionEndpoints
             .ProducesProblem(StatusCodes.Status400BadRequest);
 
         group.MapGet("/{submissionId}", GetSubmission)
-            .WithName(OpenApiMetadata.GetAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.GetAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.GetAnimalSection.Description)
+            .WithName(OpenApiMetadata.GetSubmission.Name)
+            .WithSummary(OpenApiMetadata.GetSubmission.Summary)
+            .WithDescription(OpenApiMetadata.GetSubmission.Description)
             .Produces<SubmissionResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapGet("/{submissionId}/{animalId}", GetSubmissionAnimal)
-            .WithName(OpenApiMetadata.GetAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.GetAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.GetAnimalSection.Description)
+            .WithName(OpenApiMetadata.GetAnimal.Name)
+            .WithSummary(OpenApiMetadata.GetAnimal.Summary)
+            .WithDescription(OpenApiMetadata.GetAnimal.Description)
             .Produces<AnimalResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group.MapPost("/{submissionId}/{animalId}", UpsertSubmissionAnimal)
-            .WithName(OpenApiMetadata.UpdateAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.UpdateAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.UpdateAnimalSection.Description)
+            .WithName(OpenApiMetadata.UpsertAnimal.Name)
+            .WithSummary(OpenApiMetadata.UpsertAnimal.Summary)
+            .WithDescription(OpenApiMetadata.UpsertAnimal.Description)
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         group.MapPatch("/{submissionId}/{animalId}", UpsertSubmissionAnimal)
-            .WithName(OpenApiMetadata.UpdateAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.UpdateAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.UpdateAnimalSection.Description)
+            .WithName(OpenApiMetadata.PatchAnimal.Name)
+            .WithSummary(OpenApiMetadata.PatchAnimal.Summary)
+            .WithDescription(OpenApiMetadata.PatchAnimal.Description)
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
         group.MapDelete("/{submissionId}/{animalId}", DeleteSubmissionAnimal)
-            .WithName(OpenApiMetadata.UpdateAnimalSection.Name)
-            .WithSummary(OpenApiMetadata.UpdateAnimalSection.Summary)
-            .WithDescription(OpenApiMetadata.UpdateAnimalSection.Description)
+            .WithName(OpenApiMetadata.DeleteAnimal.Name)
+            .WithSummary(OpenApiMetadata.DeleteAnimal.Summary)
+            .WithDescription(OpenApiMetadata.DeleteAnimal.Description)
             .Produces(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)

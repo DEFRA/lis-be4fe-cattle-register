@@ -4,11 +4,15 @@
 
 namespace Defra.Lis.Be4Fe.Models.Submissions;
 
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+
 public sealed class SubmissionAnimalDocument
 {
     public required string AnimalId { get; init; }
 
-    public required string Status { get; set; }
+    [BsonRepresentation(BsonType.String)]
+    public required ItemStatus Status { get; set; }
 
     public List<SubmissionDataItemDocument> Data { get; set; } = [];
 }

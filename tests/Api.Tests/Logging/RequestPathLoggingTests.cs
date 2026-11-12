@@ -24,7 +24,7 @@ using Serilog.Core;
 using Serilog.Events;
 
 /// <summary>
-/// Runs the birth endpoints through the logging pipeline from <c>Program</c> and checks that request paths are
+/// Runs the submission endpoints through the logging pipeline from <c>Program</c> and checks that request paths are
 /// logged as route templates, so identifiers in a path never reach the logs.
 /// </summary>
 public class RequestPathLoggingTests
@@ -35,35 +35,35 @@ public class RequestPathLoggingTests
     private readonly CapturingSink sink = new();
 
     [Fact]
-    public async Task GetSection_LogsTheRouteTemplate()
+    public async Task GetAnimal_LogsTheRouteTemplate()
     {
         await using var app = await StartAppAsync();
 
-        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/UK1/details", TestContext.Current.CancellationToken);
+        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}/{section}");
+        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}");
         AssertNoEventContainsThePathIdentifier();
     }
 
     [Fact]
-    public async Task GetSection_LogsNoRawPath_WhenTheRequestFails()
+    public async Task GetAnimal_LogsNoRawPath_WhenTheRequestFails()
     {
         await using var app = await StartAppAsync();
 
-        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/UK1/unknown", TestContext.Current.CancellationToken);
+        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/unknown", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}/{section}");
+        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}");
         sink.Events.ShouldAllBe(e => !e.RenderMessage().Contains($"/submission/{PathIdentifier}", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
-    public async Task GetSection_LogsNoRawPath_WhenTheCorrelationIdIsMissing()
+    public async Task GetAnimal_LogsNoRawPath_WhenTheCorrelationIdIsMissing()
     {
         await using var app = await StartAppAsync();
 
-        var response = await app.GetAuthenticatedTestClient().GetAsync($"/submission/{PathIdentifier}/UK1/details", TestContext.Current.CancellationToken);
+        var response = await app.GetAuthenticatedTestClient().GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         sink.Events.ShouldContain(e => e.MessageTemplate.Text.Contains(RequestHeaderNames.CorrelationId, StringComparison.Ordinal));
@@ -71,13 +71,13 @@ public class RequestPathLoggingTests
     }
 
     [Fact]
-    public async Task GetSection_LogsNoRawPath_WhenTheApiKeyIsMissing()
+    public async Task GetAnimal_LogsNoRawPath_WhenTheApiKeyIsMissing()
     {
         await using var app = await StartAppAsync();
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, CorrelationId);
 
-        var response = await client.GetAsync($"/submission/{PathIdentifier}/UK1/details", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         sink.Events.ShouldContain(e => e.MessageTemplate.Text.Contains("API key", StringComparison.Ordinal));
@@ -165,25 +165,28 @@ public class RequestPathLoggingTests
 
     private sealed class StubSubmissionService : ISubmissionService
     {
-        public Task<AnimalSectionResponse> GetSectionAsync(string submissionId, string animalId, string section, CancellationToken cancellationToken = default)
+        public Task<AnimalResponse> GetAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default)
         {
-            if (section == "unknown")
+            if (animalId == "unknown")
             {
-                throw new NotFoundException("The section was not found.");
+                throw new NotFoundException("The animal was not found.");
             }
 
-            return Task.FromResult(new AnimalSectionResponse
+            return Task.FromResult(new AnimalResponse
             {
                 AnimalId = animalId,
-                Section = section,
+                Status = ItemStatus.Draft,
                 Data = [],
             });
         }
 
-        public Task<SubmissionSummaryResponse> StartAsync(string? cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> GetSubmissionAsync(string submissionId, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task UpdateSectionAsync(string submissionId, UpdateAnimalSectionRequest request, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> StartAsync(string? cph, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task UpsertAnimalAsync(string submissionId, string animalId, AnimalRequest request, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
         public Task DeleteAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default) =>

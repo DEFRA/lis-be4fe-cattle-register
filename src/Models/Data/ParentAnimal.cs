@@ -13,6 +13,7 @@ using System.Text.Json.Serialization;
 public sealed class ParentAnimal
 {
     [Description("The animal's ear tag.")]
+    [JsonPropertyName("eartag")]
     public required string EarTag { get; init; }
 
     [Description("The animal's breed name.")]

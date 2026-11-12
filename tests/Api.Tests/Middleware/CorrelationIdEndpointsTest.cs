@@ -41,9 +41,9 @@ public sealed class CorrelationIdEndpointsTest : IClassFixture<CorrelationIdEndp
     }
 
     [Theory]
-    [InlineData("/submission")]
-    [InlineData("/submission/start")]
-    [InlineData("/submission/1234/UK200000000001/details")]
+    [InlineData("/submission/12/345/6789")]
+    [InlineData("/submission/12/345/6789/start")]
+    [InlineData("/submission/1234/UK200000000001")]
     public async Task ApiRequestWithoutTheCorrelationIdShouldBeRejectedWith400(string path)
     {
         var client = factory.CreateClient();

@@ -14,5 +14,5 @@ public sealed class SubmissionAnimalSummary
     public required string AnimalId { get; init; }
 
     [Description("The animal's status")]
-    public required string Status { get; init; }
+    public required ItemStatus Status { get; init; }
 }
