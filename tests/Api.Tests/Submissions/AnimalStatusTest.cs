@@ -43,14 +43,14 @@ public sealed class AnimalStatusTest
     {
         var bson = new BsonDocument
         {
-            { "AnimalId", "UK1" },
-            { "Status", storedStatus },
-            { "Data", new BsonArray() },
+            { "animalId", "UK1" },
+            { "status", storedStatus },
+            { "data", new BsonArray() },
         };
 
         var animal = BsonSerializer.Deserialize<SubmissionAnimalDocument>(bson);
 
         animal.Status.ShouldBe(expected);
-        animal.ToBsonDocument()["Status"].AsString.ShouldBe(expected.ToString());
+        animal.ToBsonDocument()["status"].AsString.ShouldBe(expected.ToString());
     }
 }
