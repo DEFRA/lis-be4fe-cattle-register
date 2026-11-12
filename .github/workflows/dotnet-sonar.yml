@@ -112,7 +112,6 @@ jobs:
           # Microsoft code coverage extension. Its xml format is what sonar.cs.vscoveragexml reads; the file is named
           # explicitly because it is otherwise a random GUID that no reportsPaths pattern can match.
           dotnet test \
-            --no-build \
             --coverage --coverage-output-format xml --coverage-output coverage.xml --report-trx \
             --results-directory coverage
 
