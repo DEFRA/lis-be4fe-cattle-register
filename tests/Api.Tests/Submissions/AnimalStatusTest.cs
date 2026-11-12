@@ -15,7 +15,6 @@ public sealed class AnimalStatusTest
     [InlineData(ItemStatus.Draft, "draft")]
     [InlineData(ItemStatus.Complete, "complete")]
     [InlineData(ItemStatus.Error, "error")]
-    [InlineData(ItemStatus.InProgress, "inProgress")]
     public void ShouldWriteCanonicalJsonStrings(ItemStatus status, string expected)
     {
         JsonSerializer.Serialize(status).ShouldBe($"\"{expected}\"");
@@ -28,6 +27,8 @@ public sealed class AnimalStatusTest
     [InlineData("\"0\"")]
     [InlineData("\"999\"")]
     [InlineData("\"OTHER\"")]
+    [InlineData("\"inProgress\"")]
+    [InlineData("\"InProgress\"")]
     [InlineData("null")]
     public void ShouldRejectInvalidJsonValues(string json)
     {

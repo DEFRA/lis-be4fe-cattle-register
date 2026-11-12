@@ -12,5 +12,4 @@ public enum ItemStatus
     Draft,
     Complete,
     Error,
-    InProgress,
 }
