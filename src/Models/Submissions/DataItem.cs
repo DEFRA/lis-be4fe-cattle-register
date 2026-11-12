@@ -12,7 +12,7 @@ public sealed class DataItem
     public required string Key { get; init; }
 
     [Description("The value of the data item.")]
-    public required string Value { get; init; }
+    public required string? Value { get; init; }
 
     [Description("The type of the data item.")]
     public required string Type { get; init; }

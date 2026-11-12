@@ -15,11 +15,6 @@ public static class DataItemExtensions
                 throw new ArgumentException("Every data item needs a key.", nameof(source));
             }
 
-            if (source.Value is null)
-            {
-                throw new ArgumentException($"Data item '{source.Key}' needs a string value.", nameof(source));
-            }
-
             var type = source.Type?.Trim().ToUpperInvariant();
             if (type is null || !PropertyTypes.IsSupported(type))
             {
