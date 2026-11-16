@@ -6,6 +6,7 @@ namespace Defra.Lis.Be4Fe.Api.Endpoints.Data;
 
 using Defra.Lis.Be4Fe.Api.Services;
 using Defra.Lis.Be4Fe.Models.Data;
+using Defra.Lis.Be4Fe.Models.Route;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>
@@ -46,36 +47,34 @@ public static class DataEarTagEndpoints
     }
 
     private static async Task<IResult> GetUnallocatedEarTags(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         [FromQuery(Name = "submission-id")] string? submissionId,
         IDataService dataService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await dataService.GetUnallocatedEarTagsAsync(cph, submissionId, cancellationToken));
+        return TypedResults.Ok(await dataService.GetUnallocatedEarTagsAsync(
+            cph.ToString(),
+            submissionId,
+            cancellationToken));
     }
 
     private static async Task<IResult> GetDams(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         IDataService dataService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await dataService.GetDamsAsync(cph, cancellationToken));
+        return TypedResults.Ok(await dataService.GetDamsAsync(
+            cph.ToString(),
+            cancellationToken));
     }
 
     private static async Task<IResult> GetSires(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         IDataService dataService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await dataService.GetSiresAsync(cph, cancellationToken));
+        return TypedResults.Ok(await dataService.GetSiresAsync(
+            cph.ToString(),
+            cancellationToken));
     }
 }

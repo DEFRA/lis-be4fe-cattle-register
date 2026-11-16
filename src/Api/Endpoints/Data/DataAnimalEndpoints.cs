@@ -6,6 +6,7 @@ namespace Defra.Lis.Be4Fe.Api.Endpoints.Data;
 
 using Defra.Lis.Be4Fe.Api.Services;
 using Defra.Lis.Be4Fe.Models.Data;
+using Defra.Lis.Be4Fe.Models.Route;
 
 /// <summary>
 /// Reference data the cattle-register UI reads to populate its forms, under the <c>/data</c> root.
@@ -27,14 +28,14 @@ public static class DataAnimalEndpoints
     }
 
     private static async Task<IResult> GetAnimal(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         string animalId,
         IDataService dataService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await dataService.GetAnimalAsync(cph, animalId, cancellationToken));
+        return TypedResults.Ok(await dataService.GetAnimalAsync(
+            cph.ToString(),
+            animalId,
+            cancellationToken));
     }
 }

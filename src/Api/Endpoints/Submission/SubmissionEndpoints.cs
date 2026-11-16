@@ -7,6 +7,7 @@ namespace Defra.Lis.Be4Fe.Api.Endpoints.Submission;
 using System.Diagnostics.CodeAnalysis;
 using Defra.Lis.Be4Fe.Api.Authentication;
 using Defra.Lis.Be4Fe.Api.Services;
+using Defra.Lis.Be4Fe.Models.Route;
 using Defra.Lis.Be4Fe.Models.Submissions;
 
 /// <summary>
@@ -96,56 +97,53 @@ public static class SubmissionEndpoints
     }
 
     private static async Task<IResult> ListSubmissions(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await submissionService.ListAsync(cph, cancellationToken));
+        return TypedResults.Ok(await submissionService.ListAsync(
+            cph.ToString(),
+            cancellationToken));
     }
 
     private static async Task<IResult> StartSubmission(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await submissionService.StartAsync(cph, cancellationToken));
+        return TypedResults.Ok(await submissionService.StartAsync(
+            cph.ToString(),
+            cancellationToken));
     }
 
     private static async Task<IResult> GetSubmission(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         string submissionId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await submissionService.GetSubmissionAsync(cph, submissionId, cancellationToken));
+        return TypedResults.Ok(await submissionService.GetSubmissionAsync(
+            cph.ToString(),
+            submissionId,
+            cancellationToken));
     }
 
     private static async Task<IResult> GetSubmissionAnimal(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         string submissionId,
         string animalId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        return TypedResults.Ok(await submissionService.GetAnimalAsync(cph, submissionId, animalId, cancellationToken));
+        return TypedResults.Ok(await submissionService.GetAnimalAsync(
+            cph.ToString(),
+            submissionId,
+            animalId,
+            cancellationToken));
     }
 
     private static async Task<IResult> UpsertSubmissionAnimal(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         string submissionId,
         string animalId,
         AnimalRequest? request,
@@ -154,35 +152,40 @@ public static class SubmissionEndpoints
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var cph = $"{county}/{parish}/{holding}";
-        await submissionService.UpsertAnimalAsync(cph, submissionId, animalId, request, cancellationToken);
+        await submissionService.UpsertAnimalAsync(
+            cph.ToString(),
+            submissionId,
+            animalId,
+            request,
+            cancellationToken);
         return TypedResults.Ok();
     }
 
     private static async Task<IResult> DeleteSubmissionAnimal(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         string submissionId,
         string animalId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        await submissionService.DeleteAnimalAsync(cph, submissionId, animalId, cancellationToken);
+        await submissionService.DeleteAnimalAsync(
+            cph.ToString(),
+            submissionId,
+            animalId,
+            cancellationToken);
         return TypedResults.Ok();
     }
 
     private static async Task<IResult> SubmitSubmission(
-        string county,
-        string parish,
-        string holding,
+        [AsParameters] CphRoute cph,
         string submissionId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        var cph = $"{county}/{parish}/{holding}";
-        await submissionService.SubmitAsync(cph, submissionId, cancellationToken);
+        await submissionService.SubmitAsync(
+            cph.ToString(),
+            submissionId,
+            cancellationToken);
         return TypedResults.Ok();
     }
 }
