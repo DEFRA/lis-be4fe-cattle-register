@@ -13,7 +13,7 @@ public static class OpenApiMetadata
     public static class Get
     {
         public const string Name = "GetHealth";
-        public const string Summary = "Get health status";
-        public const string Description = "Retrieves the health status of the API and its dependencies";
+        public const string Summary = "Gets the API health status.";
+        public const string Description = "Returns the API health status. No dependency checks are currently registered, so MongoDB and the cattle API are not checked.";
     }
 }

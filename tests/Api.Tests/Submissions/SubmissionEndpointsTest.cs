@@ -143,7 +143,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
         var start = await client.GetStringAsync(StartUrl, TestContext.Current.CancellationToken);
         var list = await client.GetStringAsync(ListUrl, TestContext.Current.CancellationToken);
-        var animalResponse = await client.GetStringAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
+        var animalResponse = await client.GetStringAsync($"{ListUrl}/{id}/{Animal}", TestContext.Current.CancellationToken);
 
         start.ShouldContain(id);
         list.ShouldContain(id);
@@ -158,9 +158,9 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         await StartAsync();
         var guid = factory.Repository.Stored.ShouldHaveSingleItem().Id;
 
-        var get = await client.GetAsync($"/submission/{guid}/{Animal}", TestContext.Current.CancellationToken);
-        var update = await PostAsync($"/submission/{guid}/{Animal}", UpdatePayload("[]"));
-        var submit = await PostAsync($"/submission/{guid}");
+        var get = await client.GetAsync($"{ListUrl}/{guid}/{Animal}", TestContext.Current.CancellationToken);
+        var update = await PostAsync($"{ListUrl}/{guid}/{Animal}", UpdatePayload("[]"));
+        var submit = await PostAsync($"{ListUrl}/{guid}");
 
         get.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         update.StatusCode.ShouldBe(HttpStatusCode.NotFound);
@@ -172,7 +172,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id.ToLowerInvariant()}/{Animal}", UpdatePayload("[]"));
+        var response = await PostAsync($"{ListUrl}/{id.ToLowerInvariant()}/{Animal}", UpdatePayload("[]"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -217,7 +217,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         };
         await StartAsync();
 
-        var response = await client.GetAsync($"/submission/oil-abc-def", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"{ListUrl}/oil-abc-def", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -237,7 +237,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
 
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var body = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
 
         body.RootElement.GetProperty("animal-id").GetString().ShouldBe(Animal);
         body.RootElement.GetProperty("status").GetString().ShouldBe("draft");
@@ -247,7 +247,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Fact]
     public async Task GetAnimalShouldReturn404ForAnUnknownSubmission()
     {
-        var response = await client.GetAsync($"/submission/unknown/{Animal}", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"{ListUrl}/unknown/{Animal}", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -259,7 +259,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
         await UpdateAsync(id, Animal, """[{"key":"dateOfBirth","value":"2026-11-01","type":"DATE"},{"key":"weight","value":"42","type":"NUMBER"}]""");
 
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var body = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
         var items = body.RootElement.GetProperty("data").EnumerateArray().ToList();
         items.Count.ShouldBe(2);
         items[0].GetProperty("key").GetString().ShouldBe("dateOfBirth");
@@ -284,7 +284,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
         var stored = factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem().Data.ShouldHaveSingleItem();
         stored.Value.ShouldBeNull();
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var body = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
         var item = body.RootElement.GetProperty("data")[0];
         item.GetProperty("key").GetString().ShouldBe("k");
         item.GetProperty("value").ValueKind.ShouldBe(JsonValueKind.Null);
@@ -304,7 +304,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
         await UpdateAsync(id, Animal, $$"""[{"key":"k","value":"v","type":"{{type}}"}]""");
 
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var body = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
         body.RootElement.GetProperty("data")[0].GetProperty("type").GetString().ShouldBe(type.ToUpperInvariant());
     }
 
@@ -317,11 +317,11 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
         await UpdateAsync(id, Animal, """[{"key":"a","value":"second","type":"STRING"}]""");
 
-        using var updatedAnimal = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var updatedAnimal = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
         var item = updatedAnimal.RootElement.GetProperty("data").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("key").GetString().ShouldBe("a");
         item.GetProperty("value").GetString().ShouldBe("second");
-        using var otherAnimal = await GetJsonAsync($"/submission/{id}/UK2");
+        using var otherAnimal = await GetJsonAsync($"{ListUrl}/{id}/UK2");
         otherAnimal.RootElement.GetProperty("data")[0].GetProperty("value").GetString().ShouldBe("kept");
     }
 
@@ -354,7 +354,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id}/{Animal}", payload);
+        var response = await PostAsync($"{ListUrl}/{id}/{Animal}", payload);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
@@ -423,7 +423,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id}/{Animal}", $$"""{"status":"OTHER","data":[]}""");
+        var response = await PostAsync($"{ListUrl}/{id}/{Animal}", $$"""{"status":"OTHER","data":[]}""");
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldBeEmpty();
@@ -432,7 +432,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Fact]
     public async Task UpdateShouldReturn404ForAnUnknownSubmission()
     {
-        var response = await PostAsync($"/submission/unknown/{Animal}", UpdatePayload("[]"));
+        var response = await PostAsync($"{ListUrl}/unknown/{Animal}", UpdatePayload("[]"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -443,7 +443,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         factory.Repository.RejectNextReplace = true;
 
-        var response = await PostAsync($"/submission/{id}/{Animal}", UpdatePayload("[]"));
+        var response = await PostAsync($"{ListUrl}/{id}/{Animal}", UpdatePayload("[]"));
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -455,12 +455,12 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         await UpdateAsync(id, "UK1", """[{"key":"a","value":"gone","type":"STRING"}]""");
         await UpdateAsync(id, "UK2", """[{"key":"a","value":"kept","type":"STRING"}]""");
 
-        var response = await client.DeleteAsync($"/submission/{id}/UK1", TestContext.Current.CancellationToken);
+        var response = await client.DeleteAsync($"{ListUrl}/{id}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var animal = factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem();
         animal.AnimalId.ShouldBe("UK2");
-        using var animalResponse = await GetJsonAsync($"/submission/{id}/UK2");
+        using var animalResponse = await GetJsonAsync($"{ListUrl}/{id}/UK2");
         animalResponse.RootElement.GetProperty("data")[0].GetProperty("value").GetString().ShouldBe("kept");
     }
 
@@ -470,7 +470,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
 
-        await client.DeleteAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
+        await client.DeleteAsync($"{ListUrl}/{id}/{Animal}", TestContext.Current.CancellationToken);
 
         using var start = await GetJsonAsync(StartUrl);
         start.RootElement.GetProperty("submission-id").GetString().ShouldBe(id);
@@ -485,7 +485,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
 
-        var response = await client.DeleteAsync($"/submission/{submission.Replace("{id}", id, StringComparison.Ordinal)}/{animalId}", TestContext.Current.CancellationToken);
+        var response = await client.DeleteAsync($"{ListUrl}/{submission.Replace("{id}", id, StringComparison.Ordinal)}/{animalId}", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
         factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem();
@@ -496,9 +496,9 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
-        await PostAsync($"/submission/{id}");
+        await PostAsync($"{ListUrl}/{id}");
 
-        var response = await client.DeleteAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
+        var response = await client.DeleteAsync($"{ListUrl}/{id}/{Animal}", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
         factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem();
@@ -511,7 +511,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         await UpdateAsync(id, Animal, "[]");
         factory.Repository.RejectNextReplace = true;
 
-        var response = await client.DeleteAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
+        var response = await client.DeleteAsync($"{ListUrl}/{id}/{Animal}", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
         factory.Repository.Stored.ShouldHaveSingleItem().Animals.ShouldHaveSingleItem();
@@ -524,7 +524,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         await UpdateAsync(id, Animal, "[]");
         var guid = factory.Repository.Stored.ShouldHaveSingleItem().Id;
 
-        var response = await client.DeleteAsync($"/submission/{guid}/{Animal}", TestContext.Current.CancellationToken);
+        var response = await client.DeleteAsync($"{ListUrl}/{guid}/{Animal}", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -535,7 +535,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
 
-        var response = await PostAsync($"/submission/{id}");
+        var response = await PostAsync($"{ListUrl}/{id}");
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         factory.Transfer.TransferredIds.ShouldBe([id]);
@@ -550,7 +550,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
-        await PostAsync($"/submission/{id}");
+        await PostAsync($"{ListUrl}/{id}");
 
         var next = await StartAsync();
 
@@ -564,7 +564,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         await UpdateAsync(id, Animal, "[]");
         factory.Transfer.FailWith = new ServiceUnavailableException("Unavailable", new HttpRequestException());
 
-        var response = await PostAsync($"/submission/{id}");
+        var response = await PostAsync($"{ListUrl}/{id}");
 
         response.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable);
         using var list = await GetJsonAsync(ListUrl);
@@ -578,7 +578,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
 
-        var response = await PostAsync($"/submission/{id}");
+        var response = await PostAsync($"{ListUrl}/{id}");
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         factory.Transfer.TransferredIds.ShouldBeEmpty();
@@ -589,10 +589,10 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
-        await PostAsync($"/submission/{id}");
+        await PostAsync($"{ListUrl}/{id}");
 
-        var submit = await PostAsync($"/submission/{id}");
-        var update = await PostAsync($"/submission/{id}/{Animal}", UpdatePayload("[]"));
+        var submit = await PostAsync($"{ListUrl}/{id}");
+        var update = await PostAsync($"{ListUrl}/{id}/{Animal}", UpdatePayload("[]"));
 
         submit.StatusCode.ShouldBe(HttpStatusCode.Conflict);
         update.StatusCode.ShouldBe(HttpStatusCode.Conflict);
@@ -602,7 +602,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Fact]
     public async Task SubmitShouldReturn404ForAnUnknownSubmission()
     {
-        var response = await PostAsync("/submission/unknown");
+        var response = await PostAsync($"{ListUrl}/unknown");
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -654,10 +654,10 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     [Theory]
     [InlineData("GET", "/submission/12/345/6789")]
     [InlineData("GET", "/submission/12/345/6789/start")]
-    [InlineData("GET", "/submission/1/UK1")]
-    [InlineData("DELETE", "/submission/1/UK1")]
-    [InlineData("POST", "/submission/1/UK1")]
-    [InlineData("POST", "/submission/1")]
+    [InlineData("GET", "/submission/12/345/6789/1/UK1")]
+    [InlineData("DELETE", "/submission/12/345/6789/1/UK1")]
+    [InlineData("POST", "/submission/12/345/6789/1/UK1")]
+    [InlineData("POST", "/submission/12/345/6789/1")]
     public async Task EveryEndpointShouldRequireTheApiKey(string method, string url)
     {
         using var anonymous = factory.CreateClient();
@@ -690,7 +690,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
 
-        using var body = await GetJsonAsync($"/submission/{id}");
+        using var body = await GetJsonAsync($"{ListUrl}/{id}");
 
         body.RootElement.GetProperty("submission-id").GetString().ShouldBe(id);
         body.RootElement.GetProperty("animal-count").GetInt32().ShouldBe(1);
@@ -701,7 +701,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     public async Task GetAnimalShouldReturn404ForAnUnknownAnimal()
     {
         var id = await StartAsync();
-        var response = await client.GetAsync($"/submission/{id}/{Animal}", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"{ListUrl}/{id}/{Animal}", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
@@ -711,10 +711,10 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var id = await StartAsync();
         await UpdateAsync(id, Animal, "[]");
         using var content = new StringContent("""{"status":"complete","data":[{"key":"weight","value":"42","type":"number"}]}""", Encoding.UTF8, "application/json");
-        var response = await client.PatchAsync($"/submission/{id}/{Animal}", content, TestContext.Current.CancellationToken);
+        var response = await client.PatchAsync($"{ListUrl}/{id}/{Animal}", content, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        using var body = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var body = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
         body.RootElement.GetProperty("status").GetString().ShouldBe("complete");
         body.RootElement.GetProperty("data")[0].GetProperty("type").GetString().ShouldBe("NUMBER");
     }
@@ -730,7 +730,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
         await UpdateAsync(id, Animal, """[{"key":"original","value":"kept","type":"STRING"}]""");
-        using var request = new HttpRequestMessage(new HttpMethod(method), $"/submission/{id}/{Animal}")
+        using var request = new HttpRequestMessage(new HttpMethod(method), $"{ListUrl}/{id}/{Animal}")
         {
             Content = new StringContent(payload, Encoding.UTF8, "application/json"),
         };
@@ -738,7 +738,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
-        using var animal = await GetJsonAsync($"/submission/{id}/{Animal}");
+        using var animal = await GetJsonAsync($"{ListUrl}/{id}/{Animal}");
         var item = animal.RootElement.GetProperty("data").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("key").GetString().ShouldBe("original");
         item.GetProperty("value").GetString().ShouldBe("kept");
@@ -762,13 +762,13 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
     private async Task UpdateAsync(string id, string animalId, string data)
     {
-        var response = await PostAsync($"/submission/{id}/{animalId}", UpdatePayload(data));
+        var response = await PostAsync($"{ListUrl}/{id}/{animalId}", UpdatePayload(data));
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     private async Task PostUpdateWithStatusAsync(string id, string animalId, string status)
     {
-        var response = await PostAsync($"/submission/{id}/{animalId}", $$"""{"status":"{{status}}","data":[]}""");
+        var response = await PostAsync($"{ListUrl}/{id}/{animalId}", $$"""{"status":"{{status}}","data":[]}""");
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 

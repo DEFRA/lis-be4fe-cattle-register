@@ -17,4 +17,8 @@ public sealed partial class SubmissionService
 
     [LoggerMessage(LogLevel.Warning, "The submission could not be transferred to the cattle API and stays a draft. SubmissionId: {SubmissionId}")]
     partial void LogSubmissionTransferFailed(string submissionId, Exception exception);
+
+    [LoggerMessage(LogLevel.Warning,
+        "The requested submission does not belong to the CPH. SubmissionId: {{SubmissionId}}, Cph: {{Cph}}")]
+    partial void LogRequestedSubmissionDoesNotBelongToCph(string submissionId, string cph);
 }

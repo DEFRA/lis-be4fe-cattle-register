@@ -39,10 +39,10 @@ public class RequestPathLoggingTests
     {
         await using var app = await StartAppAsync();
 
-        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
+        var response = await AuthenticatedClient(app).GetAsync($"/submission/12/345/6789/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}");
+        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{county}/{parish}/{holding}/{submissionId}/{animalId}");
         AssertNoEventContainsThePathIdentifier();
     }
 
@@ -51,10 +51,10 @@ public class RequestPathLoggingTests
     {
         await using var app = await StartAppAsync();
 
-        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/unknown", TestContext.Current.CancellationToken);
+        var response = await AuthenticatedClient(app).GetAsync($"/submission/12/345/6789/{PathIdentifier}/unknown", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}");
+        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{county}/{parish}/{holding}/{submissionId}/{animalId}");
         sink.Events.ShouldAllBe(e => !e.RenderMessage().Contains($"/submission/{PathIdentifier}", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -63,7 +63,7 @@ public class RequestPathLoggingTests
     {
         await using var app = await StartAppAsync();
 
-        var response = await app.GetAuthenticatedTestClient().GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
+        var response = await app.GetAuthenticatedTestClient().GetAsync($"/submission/12/345/6789/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         sink.Events.ShouldContain(e => e.MessageTemplate.Text.Contains(RequestHeaderNames.CorrelationId, StringComparison.Ordinal));
@@ -77,7 +77,7 @@ public class RequestPathLoggingTests
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, CorrelationId);
 
-        var response = await client.GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"/submission/12/345/6789/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         sink.Events.ShouldContain(e => e.MessageTemplate.Text.Contains("API key", StringComparison.Ordinal));
@@ -163,9 +163,14 @@ public class RequestPathLoggingTests
         return app;
     }
 
-    private sealed class StubSubmissionService : ISubmissionService
+    private sealed class StubSubmissionService
+        : ISubmissionService
     {
-        public Task<AnimalResponse> GetAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default)
+        public Task<AnimalResponse> GetAnimalAsync(
+            string cph,
+            string submissionId,
+            string animalId,
+            CancellationToken cancellationToken = default)
         {
             if (animalId == "unknown")
             {
@@ -180,22 +185,41 @@ public class RequestPathLoggingTests
             });
         }
 
-        public Task<SubmissionResponse> GetSubmissionAsync(string submissionId, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> GetSubmissionAsync(
+            string cph,
+            string submissionId,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<SubmissionResponse> StartAsync(string? cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> StartAsync(
+            string cph,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task UpsertAnimalAsync(string submissionId, string animalId, AnimalRequest request, CancellationToken cancellationToken = default) =>
+        public Task UpsertAnimalAsync(
+            string cph,
+            string submissionId,
+            string animalId,
+            AnimalRequest request,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task DeleteAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default) =>
+        public Task DeleteAnimalAsync(
+            string cph,
+            string submissionId,
+            string animalId,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task SubmitAsync(string submissionId, CancellationToken cancellationToken = default) =>
+        public Task SubmitAsync(
+            string cph,
+            string submissionId,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<SubmissionListResponse> ListAsync(string? cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionListResponse> ListAsync(
+            string cph,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
     }
 

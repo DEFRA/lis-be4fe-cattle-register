@@ -39,7 +39,7 @@ public sealed class ServiceToServiceEndpointsTest : IClassFixture<ServiceToServi
     [Theory]
     [InlineData("/submission/12/345/6789")]
     [InlineData("/submission/12/345/6789/start")]
-    [InlineData("/submission/1234/UK200000000001")]
+    [InlineData("/submission/12/345/6789/1234/UK200000000001")]
     public async Task ApiRequestWithoutTheKeyShouldBeRejected(string path)
     {
         var response = await CreateCorrelatedClient().GetAsync(path, TestContext.Current.CancellationToken);

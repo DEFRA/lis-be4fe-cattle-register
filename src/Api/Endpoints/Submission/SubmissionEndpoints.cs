@@ -38,23 +38,24 @@ public static class SubmissionEndpoints
             .WithSummary(OpenApiMetadata.StartSubmission.Summary)
             .WithDescription(OpenApiMetadata.StartSubmission.Description)
             .Produces<SubmissionResponse>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status400BadRequest);
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapGet("/{submissionId}", GetSubmission)
+        group.MapGet("/{county}/{parish}/{holding}/{submissionId}", GetSubmission)
             .WithName(OpenApiMetadata.GetSubmission.Name)
             .WithSummary(OpenApiMetadata.GetSubmission.Summary)
             .WithDescription(OpenApiMetadata.GetSubmission.Description)
             .Produces<SubmissionResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapGet("/{submissionId}/{animalId}", GetSubmissionAnimal)
+        group.MapGet("/{county}/{parish}/{holding}/{submissionId}/{animalId}", GetSubmissionAnimal)
             .WithName(OpenApiMetadata.GetAnimal.Name)
             .WithSummary(OpenApiMetadata.GetAnimal.Summary)
             .WithDescription(OpenApiMetadata.GetAnimal.Description)
             .Produces<AnimalResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
-        group.MapPost("/{submissionId}/{animalId}", UpsertSubmissionAnimal)
+        group.MapPost("/{county}/{parish}/{holding}/{submissionId}/{animalId}", UpsertSubmissionAnimal)
             .WithName(OpenApiMetadata.UpsertAnimal.Name)
             .WithSummary(OpenApiMetadata.UpsertAnimal.Summary)
             .WithDescription(OpenApiMetadata.UpsertAnimal.Description)
@@ -63,7 +64,7 @@ public static class SubmissionEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapPatch("/{submissionId}/{animalId}", UpsertSubmissionAnimal)
+        group.MapPatch("/{county}/{parish}/{holding}/{submissionId}/{animalId}", UpsertSubmissionAnimal)
             .WithName(OpenApiMetadata.PatchAnimal.Name)
             .WithSummary(OpenApiMetadata.PatchAnimal.Summary)
             .WithDescription(OpenApiMetadata.PatchAnimal.Description)
@@ -72,7 +73,7 @@ public static class SubmissionEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapDelete("/{submissionId}/{animalId}", DeleteSubmissionAnimal)
+        group.MapDelete("/{county}/{parish}/{holding}/{submissionId}/{animalId}", DeleteSubmissionAnimal)
             .WithName(OpenApiMetadata.DeleteAnimal.Name)
             .WithSummary(OpenApiMetadata.DeleteAnimal.Summary)
             .WithDescription(OpenApiMetadata.DeleteAnimal.Description)
@@ -81,7 +82,7 @@ public static class SubmissionEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict);
 
-        group.MapPost("/{submissionId}", SubmitSubmission)
+        group.MapPost("/{county}/{parish}/{holding}/{submissionId}", SubmitSubmission)
             .WithName(OpenApiMetadata.SubmitSubmission.Name)
             .WithSummary(OpenApiMetadata.SubmitSubmission.Summary)
             .WithDescription(OpenApiMetadata.SubmitSubmission.Description)
@@ -117,23 +118,34 @@ public static class SubmissionEndpoints
     }
 
     private static async Task<IResult> GetSubmission(
+        string county,
+        string parish,
+        string holding,
         string submissionId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(await submissionService.GetSubmissionAsync(submissionId, cancellationToken));
+        var cph = $"{county}/{parish}/{holding}";
+        return TypedResults.Ok(await submissionService.GetSubmissionAsync(cph, submissionId, cancellationToken));
     }
 
     private static async Task<IResult> GetSubmissionAnimal(
+        string county,
+        string parish,
+        string holding,
         string submissionId,
         string animalId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        return TypedResults.Ok(await submissionService.GetAnimalAsync(submissionId, animalId, cancellationToken));
+        var cph = $"{county}/{parish}/{holding}";
+        return TypedResults.Ok(await submissionService.GetAnimalAsync(cph, submissionId, animalId, cancellationToken));
     }
 
     private static async Task<IResult> UpsertSubmissionAnimal(
+        string county,
+        string parish,
+        string holding,
         string submissionId,
         string animalId,
         AnimalRequest? request,
@@ -142,26 +154,35 @@ public static class SubmissionEndpoints
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        await submissionService.UpsertAnimalAsync(submissionId, animalId, request, cancellationToken);
+        var cph = $"{county}/{parish}/{holding}";
+        await submissionService.UpsertAnimalAsync(cph, submissionId, animalId, request, cancellationToken);
         return TypedResults.Ok();
     }
 
     private static async Task<IResult> DeleteSubmissionAnimal(
+        string county,
+        string parish,
+        string holding,
         string submissionId,
         string animalId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        await submissionService.DeleteAnimalAsync(submissionId, animalId, cancellationToken);
+        var cph = $"{county}/{parish}/{holding}";
+        await submissionService.DeleteAnimalAsync(cph, submissionId, animalId, cancellationToken);
         return TypedResults.Ok();
     }
 
     private static async Task<IResult> SubmitSubmission(
+        string county,
+        string parish,
+        string holding,
         string submissionId,
         ISubmissionService submissionService,
         CancellationToken cancellationToken)
     {
-        await submissionService.SubmitAsync(submissionId, cancellationToken);
+        var cph = $"{county}/{parish}/{holding}";
+        await submissionService.SubmitAsync(cph, submissionId, cancellationToken);
         return TypedResults.Ok();
     }
 }
