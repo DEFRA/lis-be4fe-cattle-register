@@ -2,14 +2,14 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Authentication;
+namespace Defra.Livestock.Be4Fe.Api.Authentication;
 
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.Api.Utils.Logging;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Utils.Logging;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Options;
 

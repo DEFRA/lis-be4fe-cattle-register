@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Models.Route;
+namespace Defra.Livestock.Be4Fe.Models.Route;
 
 using Microsoft.AspNetCore.Mvc;
 

@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Utils;
+namespace Defra.Livestock.Be4Fe.Api.Utils;
 
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;

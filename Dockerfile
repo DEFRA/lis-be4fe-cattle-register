@@ -26,4 +26,4 @@ ENV ASPNETCORE_URLS=http://+:${PORT}
 
 USER $APP_UID
 
-ENTRYPOINT ["dotnet", "Defra.Lis.Be4Fe.Api.dll"]
+ENTRYPOINT ["dotnet", "Defra.Livestock.Be4Fe.Api.dll"]

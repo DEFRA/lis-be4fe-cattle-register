@@ -2,9 +2,8 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Utils.Logging;
+namespace Defra.Livestock.Be4Fe.Api.Utils.Logging;
 
-using Microsoft.AspNetCore.Http;
 using Serilog.Core;
 using Serilog.Events;
 

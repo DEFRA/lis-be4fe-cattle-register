@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.CattleApi;
+namespace Defra.Livestock.Be4Fe.CattleApi;
 
 /// <summary>
 /// A county/parish/holding number split into its three segments for use in cattle API routes.

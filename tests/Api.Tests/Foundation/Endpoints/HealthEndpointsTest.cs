@@ -2,16 +2,16 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Foundation.Endpoints;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Foundation.Endpoints;
 
 using System.Net;
 using System.Net.Http.Json;
-using Defra.Lis.Be4Fe.Api.Endpoints.Health;
-using Defra.Lis.Be4Fe.Api.MetaData;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Health;
+using Defra.Livestock.Be4Fe.Api.MetaData;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using HealthStatusModel = Defra.Lis.Be4Fe.Models.Health.HealthStatus;
+using HealthStatusModel = Defra.Livestock.Be4Fe.Models.Health.HealthStatus;
 
 public class HealthEndpointsTest : IClassFixture<ApiFactory>
 {

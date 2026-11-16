@@ -2,11 +2,9 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Utils.Logging;
+namespace Defra.Livestock.Be4Fe.Api.Utils.Logging;
 
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 
 /// <summary>
 /// The request path to write to the logs. The raw path can carry personal data, such as the Defra ID subject in

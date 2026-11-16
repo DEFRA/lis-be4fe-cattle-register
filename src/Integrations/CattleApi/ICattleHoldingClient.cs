@@ -2,9 +2,9 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.CattleApi;
+namespace Defra.Livestock.Be4Fe.CattleApi;
 
-using Defra.Lis.Be4Fe.Models.Lookups.Models;
+using Defra.Livestock.Be4Fe.Models.Lookups.Models;
 
 /// <summary>
 /// Cattle-on-holding lookups passed through to the cattle API. Every member throws

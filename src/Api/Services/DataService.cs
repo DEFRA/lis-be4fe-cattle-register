@@ -2,13 +2,13 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Services;
+namespace Defra.Livestock.Be4Fe.Api.Services;
 
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Data;
-using Defra.Lis.Be4Fe.Models.Lookups.Models;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Data;
+using Defra.Livestock.Be4Fe.Models.Lookups.Models;
 
 /// <inheritdoc />
 public sealed partial class DataService(

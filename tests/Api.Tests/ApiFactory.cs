@@ -2,9 +2,8 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests;
+namespace Defra.Livestock.Be4Fe.Api.Tests;
 
-using Defra.Lis.Be4Fe.Api;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 

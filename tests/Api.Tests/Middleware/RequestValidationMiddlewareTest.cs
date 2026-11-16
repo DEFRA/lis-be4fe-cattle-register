@@ -2,12 +2,12 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Middleware;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Middleware;
 
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.MetaData;
-using Defra.Lis.Be4Fe.Api.Middleware;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.MetaData;
+using Defra.Livestock.Be4Fe.Api.Middleware;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;

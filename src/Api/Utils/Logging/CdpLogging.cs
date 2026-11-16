@@ -2,18 +2,14 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Utils.Logging;
+namespace Defra.Livestock.Be4Fe.Api.Utils.Logging;
 
 using System.Diagnostics.CodeAnalysis;
-using Defra.Lis.Be4Fe.Api.Utils.Auditing;
+using Defra.Livestock.Be4Fe.Api.Utils.Auditing;
 using Defra.Livestock.Sdk.Api.Strategies.Operations.Http.Rest.Client;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using ILogger = Serilog.ILogger;
 
 public static class CdpLogging
 {

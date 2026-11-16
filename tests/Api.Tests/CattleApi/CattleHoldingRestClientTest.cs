@@ -2,12 +2,12 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.CattleApi;
+namespace Defra.Livestock.Be4Fe.Api.Tests.CattleApi;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Lookups.Models;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Lookups.Models;
 using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Exceptions;
 using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Operations.Http.Rest.Client;
 using Defra.Livestock.Sdk.Api.Strategies.Operations;

@@ -2,18 +2,19 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Data;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Data;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.Authentication;
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Data;
-using Defra.Lis.Be4Fe.Models.Lookups.Models;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Authentication;
+using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Data;
+using Defra.Livestock.Be4Fe.Models.Lookups.Models;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>
 /// Runs the <c>/data</c> endpoints through the real pipeline with the cattle API and submission store stubbed.
 /// </summary>
+[SuppressMessage("SonarCloud", "S1172",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S1144",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S2325",  Justification = "interface implementation.")]
 public sealed class DataEndpointsTest : IAsyncDisposable
 {
     private const string Cph = "12/345/6789";

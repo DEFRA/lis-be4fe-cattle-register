@@ -2,11 +2,11 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Endpoints.Data;
+namespace Defra.Livestock.Be4Fe.Api.Endpoints.Data;
 
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.Models.Data;
-using Defra.Lis.Be4Fe.Models.Route;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.Models.Data;
+using Defra.Livestock.Be4Fe.Models.Route;
 using Microsoft.AspNetCore.Mvc;
 
 /// <summary>

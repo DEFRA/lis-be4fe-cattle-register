@@ -2,9 +2,9 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Services;
+namespace Defra.Livestock.Be4Fe.Api.Services;
 
-using Defra.Lis.Be4Fe.Models.Data;
+using Defra.Livestock.Be4Fe.Models.Data;
 
 /// <summary>
 /// Reference data the cattle-register UI reads to populate its forms.

@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Authentication;
+namespace Defra.Livestock.Be4Fe.Api.Authentication;
 
 public sealed partial class ApiKeyAuthenticationHandler
 {

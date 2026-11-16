@@ -2,13 +2,13 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Endpoints.Submission;
+namespace Defra.Livestock.Be4Fe.Api.Endpoints.Submission;
 
 using System.Diagnostics.CodeAnalysis;
-using Defra.Lis.Be4Fe.Api.Authentication;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.Models.Route;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Authentication;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.Models.Route;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 
 /// <summary>
 /// The BFF framework endpoints for submission. They sit at the <c>/submission</c> root the framework sets out,

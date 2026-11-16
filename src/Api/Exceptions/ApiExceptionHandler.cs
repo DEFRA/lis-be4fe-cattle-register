@@ -2,11 +2,11 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Exceptions;
+namespace Defra.Livestock.Be4Fe.Api.Exceptions;
 
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.Api.Utils.Logging;
-using Defra.Lis.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Utils.Logging;
+using Defra.Livestock.Be4Fe.CattleApi;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Serilog.Context;

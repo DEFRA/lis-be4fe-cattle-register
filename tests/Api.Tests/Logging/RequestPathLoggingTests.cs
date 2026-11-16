@@ -2,19 +2,20 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Logging;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Logging;
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
-using Defra.Lis.Be4Fe.Api.Endpoints.Submission;
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Middleware;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.Api.Tests.Authentication;
-using Defra.Lis.Be4Fe.Api.Utils.Logging;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Submission;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Middleware;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.Api.Tests.Authentication;
+using Defra.Livestock.Be4Fe.Api.Utils.Logging;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,9 @@ using Serilog.Events;
 /// Runs the submission endpoints through the logging pipeline from <c>Program</c> and checks that request paths are
 /// logged as route templates, so identifiers in a path never reach the logs.
 /// </summary>
+[SuppressMessage("SonarCloud", "S1172",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S1144",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S2325",  Justification = "interface implementation.")]
 public class RequestPathLoggingTests
 {
     private const string PathIdentifier = "5e0c8f8a-4b1d-4c7e-9a3f-6d2b8e1f0a47";

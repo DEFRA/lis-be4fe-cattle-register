@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Models.Data;
+namespace Defra.Livestock.Be4Fe.Models.Data;
 
 using System.ComponentModel;
 using System.Text.Json.Serialization;

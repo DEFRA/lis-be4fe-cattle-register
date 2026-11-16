@@ -12,7 +12,7 @@
     <PackageProjectUrl>https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
 
-    <RootNamespace>Defra.Lis.Be4Fe</RootNamespace>
+    <RootNamespace>Defra.Livestock.Be4Fe</RootNamespace>
     <ProductName>Defra Livestock Information Service</ProductName>
     <RootNamespace>$(RootNamespace).$(MSBuildProjectName)</RootNamespace>
     <AssemblyName>$(RootNamespace)</AssemblyName>

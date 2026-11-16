@@ -2,12 +2,12 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Foundation.Endpoints;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Foundation.Endpoints;
 
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Models.Health;
+using Defra.Livestock.Be4Fe.Models.Health;
 
 public class ModuleEndpointsTest : IClassFixture<ApiFactory>
 {

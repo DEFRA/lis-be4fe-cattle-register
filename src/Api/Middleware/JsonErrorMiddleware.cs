@@ -2,10 +2,9 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Middleware;
+namespace Defra.Livestock.Be4Fe.Api.Middleware;
 
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 
 public abstract class JsonErrorMiddleware : IMiddleware
 {

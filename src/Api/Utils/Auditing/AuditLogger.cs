@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Utils.Auditing;
+namespace Defra.Livestock.Be4Fe.Api.Utils.Auditing;
 
 using System.Diagnostics.CodeAnalysis;
 using Serilog;

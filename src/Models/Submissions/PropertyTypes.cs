@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Models.Submissions;
+namespace Defra.Livestock.Be4Fe.Models.Submissions;
 
 public static class PropertyTypes
 {

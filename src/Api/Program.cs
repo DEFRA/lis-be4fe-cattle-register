@@ -2,24 +2,24 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api;
+namespace Defra.Livestock.Be4Fe.Api;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.Authentication;
-using Defra.Lis.Be4Fe.Api.Config;
-using Defra.Lis.Be4Fe.Api.Endpoints.Data;
-using Defra.Lis.Be4Fe.Api.Endpoints.Health;
-using Defra.Lis.Be4Fe.Api.Endpoints.Submission;
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.Api.MetaData;
-using Defra.Lis.Be4Fe.Api.Middleware;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.Api.Utils;
-using Defra.Lis.Be4Fe.Api.Utils.Logging;
-using Defra.Lis.Be4Fe.Api.Utils.Mongo;
-using Defra.Lis.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Api.Authentication;
+using Defra.Livestock.Be4Fe.Api.Config;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Data;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Health;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Submission;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
+using Defra.Livestock.Be4Fe.Api.MetaData;
+using Defra.Livestock.Be4Fe.Api.Middleware;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.Api.Utils;
+using Defra.Livestock.Be4Fe.Api.Utils.Logging;
+using Defra.Livestock.Be4Fe.Api.Utils.Mongo;
+using Defra.Livestock.Be4Fe.CattleApi;
 using Defra.Livestock.Sdk.Api.Strategies;
 using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Operations.Http.Rest.Client;
 using Defra.Livestock.Sdk.Api.Strategies.Operations.Http.Rest.Client;

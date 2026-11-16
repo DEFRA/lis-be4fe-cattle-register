@@ -2,9 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Endpoints.Health;
-
-using Defra.Lis.Be4Fe.Api;
+namespace Defra.Livestock.Be4Fe.Api.Endpoints.Health;
 
 public static class OpenApiMetadata
 {

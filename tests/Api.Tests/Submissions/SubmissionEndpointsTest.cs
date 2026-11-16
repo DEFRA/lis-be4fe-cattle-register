@@ -2,18 +2,19 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Submissions;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Submissions;
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.Authentication;
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Authentication;
+using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,6 +26,9 @@ using MongoDB.Bson.Serialization;
 /// Runs the BFF framework endpoints through the real pipeline. Submissions are held as BSON in memory, so each test
 /// also covers the document's serialisation, but not MongoDB itself.
 /// </summary>
+[SuppressMessage("SonarCloud", "S1172",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S1144",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S2325",  Justification = "interface implementation.")]
 public sealed class SubmissionEndpointsTest : IAsyncDisposable
 {
     private const string Cph = "12/345/6789";
@@ -540,7 +544,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         using var list = await GetJsonAsync(ListUrl);
         var item = list.RootElement.GetProperty("submissions").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("status").GetString().ShouldBe("SUBMITTED");
-        item.GetProperty("submitted-date").GetDateTimeOffset().ShouldBe(factory.Repository.Stored.ShouldHaveSingleItem().SubmittedDate!.Value);
+        item.GetProperty("submitted-date").GetDateTimeOffset().ShouldBe(factory.Repository.Stored.ShouldHaveSingleItem().SubmittedDate.Value);
     }
 
     [Fact]
