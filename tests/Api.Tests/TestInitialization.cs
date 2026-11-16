@@ -2,10 +2,10 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests;
+namespace Defra.Livestock.Be4Fe.Api.Tests;
 
 using System.Runtime.CompilerServices;
-using Defra.Lis.Be4Fe.Api.Utils.Mongo;
+using Defra.Livestock.Be4Fe.Api.Utils.Mongo;
 
 internal static class TestInitialization
 {

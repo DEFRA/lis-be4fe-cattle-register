@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.MetaData;
+namespace Defra.Livestock.Be4Fe.Api.MetaData;
 
 #pragma warning disable S2094
 

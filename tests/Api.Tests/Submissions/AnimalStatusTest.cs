@@ -2,10 +2,10 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Submissions;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Submissions;
 
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 

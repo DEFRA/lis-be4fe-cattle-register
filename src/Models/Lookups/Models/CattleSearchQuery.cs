@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Models.Lookups.Models;
+namespace Defra.Livestock.Be4Fe.Models.Lookups.Models;
 
 /// <summary>
 /// Optional search filters for the cattle-on-holding lookup; each is passed through to the cattle API when supplied.

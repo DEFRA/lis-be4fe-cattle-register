@@ -2,12 +2,12 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Authentication;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Authentication;
 
 using System.Collections.Concurrent;
 using System.Net;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.Authentication;
+using Defra.Livestock.Be4Fe.Api.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;

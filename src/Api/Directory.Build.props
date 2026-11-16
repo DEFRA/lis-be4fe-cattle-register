@@ -12,7 +12,6 @@
     <PackageReference Include="Elastic.CommonSchema.Serilog"/>
     <PackageReference Include="Microsoft.AspNetCore.HeaderPropagation"/>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-    <PackageReference Include="Microsoft.OpenApi" />
     <PackageReference Include="MongoDB.Driver" />
     <PackageReference Include="MongoDB.Driver.Authentication.AWS" />
     <PackageReference Include="Scalar.AspNetCore" />
@@ -21,6 +20,5 @@
     <PackageReference Include="Serilog.Enrichers.Environment"/>
     <PackageReference Include="Serilog.Extensions.Hosting"/>
     <PackageReference Include="Serilog.Settings.Configuration"/>
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
   </ItemGroup>
 </Project>

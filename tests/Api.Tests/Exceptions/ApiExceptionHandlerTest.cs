@@ -2,13 +2,13 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Exceptions;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Exceptions;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.CattleApi;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 

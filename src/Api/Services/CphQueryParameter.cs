@@ -2,10 +2,10 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Services;
+namespace Defra.Livestock.Be4Fe.Api.Services;
 
 using System.Text.RegularExpressions;
-using Defra.Lis.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.CattleApi;
 
 /// <summary>
 /// Validates and normalises the <c>cph</c> query parameter shared by the endpoints scoped to a holding.

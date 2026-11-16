@@ -2,12 +2,12 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Services;
+namespace Defra.Livestock.Be4Fe.Api.Services;
 
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 
 public sealed partial class SubmissionService(
     ISubmissionRepository repository,
@@ -18,7 +18,9 @@ public sealed partial class SubmissionService(
 {
     private const int MaxCreateDraftAttempts = 3;
 
-    public async Task<SubmissionResponse> StartAsync(string? cph, CancellationToken cancellationToken = default)
+    public async Task<SubmissionResponse> StartAsync(
+        string cph,
+        CancellationToken cancellationToken = default)
     {
         var normalisedCph = CphQueryParameter.Normalise(cph);
 
@@ -28,15 +30,22 @@ public sealed partial class SubmissionService(
         return draft.ToSubmissionResponse();
     }
 
-    public async Task<SubmissionResponse> GetSubmissionAsync(string submissionId, CancellationToken cancellationToken = default)
+    public async Task<SubmissionResponse> GetSubmissionAsync(
+        string cph,
+        string submissionId,
+        CancellationToken cancellationToken = default)
     {
-        var submission = await GetRequiredAsync(submissionId, cancellationToken);
+        var submission = await GetRequiredAsync(cph, submissionId, cancellationToken);
         return submission.ToSubmissionResponse();
     }
 
-    public async Task<AnimalResponse> GetAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default)
+    public async Task<AnimalResponse> GetAnimalAsync(
+        string cph,
+        string submissionId,
+        string animalId,
+        CancellationToken cancellationToken = default)
     {
-        var submission = await GetRequiredAsync(submissionId, cancellationToken);
+        var submission = await GetRequiredAsync(cph, submissionId, cancellationToken);
         var normalisedAnimalId = animalId.Trim();
 
         var stored = submission
@@ -48,6 +57,7 @@ public sealed partial class SubmissionService(
     }
 
     public async Task UpsertAnimalAsync(
+        string cph,
         string submissionId,
         string animalId,
         AnimalRequest request,
@@ -55,7 +65,7 @@ public sealed partial class SubmissionService(
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var submission = await GetRequiredDraftAsync(submissionId, cancellationToken);
+        var submission = await GetRequiredDraftAsync(cph, submissionId, cancellationToken);
         var normalisedAnimalId = animalId.Trim();
 
         if (string.IsNullOrWhiteSpace(normalisedAnimalId))
@@ -69,9 +79,13 @@ public sealed partial class SubmissionService(
         await SaveAsync(submission, cancellationToken);
     }
 
-    public async Task DeleteAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default)
+    public async Task DeleteAnimalAsync(
+        string cph,
+        string submissionId,
+        string animalId,
+        CancellationToken cancellationToken = default)
     {
-        var submission = await GetRequiredDraftAsync(submissionId, cancellationToken);
+        var submission = await GetRequiredDraftAsync(cph, submissionId, cancellationToken);
         var normalisedAnimalId = animalId.Trim();
 
         if (submission.Animals.RemoveAll(animal => animal.AnimalId == normalisedAnimalId) == 0)
@@ -84,9 +98,12 @@ public sealed partial class SubmissionService(
         LogDeletedAnimal(submission.HashId, submission.Animals.Count);
     }
 
-    public async Task SubmitAsync(string submissionId, CancellationToken cancellationToken = default)
+    public async Task SubmitAsync(
+        string cph,
+        string submissionId,
+        CancellationToken cancellationToken = default)
     {
-        var submission = await GetRequiredDraftAsync(submissionId, cancellationToken);
+        var submission = await GetRequiredDraftAsync(cph, submissionId, cancellationToken);
 
         if (submission.Animals.Count == 0)
         {
@@ -160,15 +177,34 @@ public sealed partial class SubmissionService(
         throw new ConflictException($"A draft submission for CPH '{cph}' could not be started. Try again.");
     }
 
-    private async Task<SubmissionDocument> GetRequiredAsync(string submissionId, CancellationToken cancellationToken)
+    private async Task<SubmissionDocument> GetRequiredAsync(
+        string cph,
+        string submissionId,
+        CancellationToken cancellationToken)
     {
-        return await repository.GetByHashIdAsync(SubmissionHashId.Normalise(submissionId), cancellationToken)
-            ?? throw new NotFoundException($"Submission '{submissionId}' was not found.");
+        var result = await repository.GetByHashIdAsync(
+            SubmissionHashId.Normalise(submissionId),
+            cancellationToken);
+        if (result is null)
+        {
+            throw new NotFoundException($"Submission '{submissionId}' was not found.");
+        }
+
+        if (result.Cph != cph)
+        {
+            LogRequestedSubmissionDoesNotBelongToCph(submissionId, cph);
+            throw new NotFoundException($"Submission '{submissionId}' was not found.");
+        }
+
+        return result;
     }
 
-    private async Task<SubmissionDocument> GetRequiredDraftAsync(string submissionId, CancellationToken cancellationToken)
+    private async Task<SubmissionDocument> GetRequiredDraftAsync(
+        string cph,
+        string submissionId,
+        CancellationToken cancellationToken)
     {
-        var submission = await GetRequiredAsync(submissionId, cancellationToken);
+        var submission = await GetRequiredAsync(cph, submissionId, cancellationToken);
 
         return submission.Status == SubmissionStatus.Draft
             ? submission

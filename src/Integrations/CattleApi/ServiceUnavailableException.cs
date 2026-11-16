@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.CattleApi;
+namespace Defra.Livestock.Be4Fe.CattleApi;
 
 /// <summary>
 /// The cattle API could not be reached, or it (or a service behind it) reported that it is temporarily unavailable

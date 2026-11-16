@@ -1,8 +1,8 @@
-// <copyright file="ParentAnimal.cs" company="Defra">
+// <copyright file="Animal.cs" company="Defra">
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Models.Data;
+namespace Defra.Livestock.Be4Fe.Models.Data;
 
 using System.ComponentModel;
 using System.Text.Json.Serialization;
@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 /// <summary>
 /// An animal that can be chosen as a dam or sire.
 /// </summary>
-public sealed class ParentAnimal
+public sealed class Animal
 {
     [Description("The animal's ear tag.")]
     [JsonPropertyName("eartag")]
@@ -29,4 +29,7 @@ public sealed class ParentAnimal
 
     [Description("The animal's sex, as the cattle API reports it.")]
     public string? Sex { get; init; }
+
+    [Description("The children assicated with the animal.")]
+    public Animal[] Children { get; init; } = Array.Empty<Animal>();
 }

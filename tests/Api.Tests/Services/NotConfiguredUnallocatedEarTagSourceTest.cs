@@ -2,11 +2,11 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Services;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Services;
 
 using System.Text;
-using Defra.Lis.Be4Fe.Api.Config;
-using Defra.Lis.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.Api.Config;
+using Defra.Livestock.Be4Fe.Api.Services;
 using Microsoft.Extensions.Options;
 
 public sealed class NotConfiguredUnallocatedEarTagSourceTest

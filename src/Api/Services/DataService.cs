@@ -2,13 +2,13 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Services;
+namespace Defra.Livestock.Be4Fe.Api.Services;
 
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Data;
-using Defra.Lis.Be4Fe.Models.Lookups.Models;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Data;
+using Defra.Livestock.Be4Fe.Models.Lookups.Models;
 
 /// <inheritdoc />
 public sealed partial class DataService(
@@ -19,38 +19,55 @@ public sealed partial class DataService(
     : IDataService
 {
     // The values the cattle API reports for an animal's sex, and accepts as the sex filter.
-    public const string Female = "Female";
-    public const string Male = "Male";
+    private const string Female = "Female";
+    private const string Male = "Male";
 
-    public async Task<UnallocatedEartagsResponse> GetUnallocatedEartagsAsync(string? cph, string? submissionId, CancellationToken cancellationToken = default)
+    public async Task<UnallocatedEartagsResponse> GetUnallocatedEarTagsAsync(
+        string cph,
+        string? submissionId,
+        CancellationToken cancellationToken = default)
     {
         var normalisedCph = CphQueryParameter.Normalise(cph);
-        var usedInSubmission = await GetEartagsUsedInSubmissionAsync(normalisedCph, submissionId, cancellationToken);
+        var usedInSubmission = await GetEarTagsUsedInSubmissionAsync(
+            normalisedCph,
+            submissionId,
+            cancellationToken);
 
-        var eartags = (await unallocatedEarTagSource.GetUnallocatedEarTagAsync(normalisedCph, cancellationToken))
+        var earTags = (await unallocatedEarTagSource.GetUnallocatedEarTagAsync(normalisedCph, cancellationToken))
             .Where(tag => !usedInSubmission.Contains(CompareKey(tag.Eartag)))
             .ToList();
 
-        LogRetrievedUnallocatedEartags(eartags.Count, usedInSubmission.Count, normalisedCph);
+        LogRetrievedUnallocatedEartags(earTags.Count, usedInSubmission.Count, normalisedCph);
 
         return new UnallocatedEartagsResponse
         {
             Cph = normalisedCph,
-            Eartags = eartags,
+            Eartags = earTags,
         };
     }
 
-    public Task<ParentAnimalsResponse> GetDamsAsync(string? cph, CancellationToken cancellationToken = default) =>
-        GetParentAnimalsAsync(cph, Female, cancellationToken);
+    public async Task<Animal> GetAnimalAsync(
+        string cph,
+        string animalId,
+        CancellationToken cancellationToken = default)
+    {
+        var holdingAnimals = await GetAnimalsAsync(cph, new CattleSearchQuery(Eartag: animalId), cancellationToken);
+        var key = CompareKey(animalId);
 
-    public Task<ParentAnimalsResponse> GetSiresAsync(string? cph, CancellationToken cancellationToken = default) =>
-        GetParentAnimalsAsync(cph, Male, cancellationToken);
+        return holdingAnimals.Animals.FirstOrDefault(animal => CompareKey(animal.EarTag) == key)
+            ?? throw new NotFoundException($"Animal '{animalId}' was not found on holding '{holdingAnimals.Cph}'.");
+    }
 
-    // Eartags are written with and without spaces and in either case, so they are compared without either.
+    public Task<HoldingAnimalsResponse> GetDamsAsync(string cph, CancellationToken cancellationToken = default) =>
+        GetAnimalsAsync(cph, new CattleSearchQuery(Sex: Female), cancellationToken);
+
+    public Task<HoldingAnimalsResponse> GetSiresAsync(string cph, CancellationToken cancellationToken = default) =>
+        GetAnimalsAsync(cph, new CattleSearchQuery(Sex: Male), cancellationToken);
+
     private static string CompareKey(string eartag) =>
         string.Concat(eartag.Where(c => !char.IsWhiteSpace(c))).ToUpperInvariant();
 
-    private static ParentAnimal ToParentAnimal(CattleSummary cattle) => new()
+    private static Animal ToParentAnimal(CattleSummary cattle) => new()
     {
         EarTag = cattle.Eartag,
         Breed = cattle.BreedName ?? (string.IsNullOrWhiteSpace(cattle.Breed) ? null : cattle.Breed),
@@ -59,29 +76,31 @@ public sealed partial class DataService(
         Sex = string.IsNullOrWhiteSpace(cattle.Sex) ? null : cattle.Sex,
     };
 
-    private async Task<ParentAnimalsResponse> GetParentAnimalsAsync(string? cph, string sex, CancellationToken cancellationToken)
+    private async Task<HoldingAnimalsResponse> GetAnimalsAsync(
+        string cph,
+        CattleSearchQuery query,
+        CancellationToken cancellationToken)
     {
         var normalisedCph = CphQueryParameter.Normalise(cph);
+        var cattle = await cattleHoldingClient.SearchCattleAsync(
+            normalisedCph,
+            query,
+            cancellationToken);
 
-        var cattle = await cattleHoldingClient.SearchCattleAsync(normalisedCph, new CattleSearchQuery(Sex: sex), cancellationToken);
-
-        // The filter is passed to the cattle API, but is applied here too so a looser match there cannot offer a bull
-        // as a dam. Animals with no recorded sex are left out for the same reason.
         var animals = cattle
-            .Where(animal => string.Equals(animal.Sex, sex, StringComparison.OrdinalIgnoreCase))
             .Select(ToParentAnimal)
             .ToList();
 
-        LogRetrievedParentAnimals(animals.Count, sex, normalisedCph);
+        LogRetrievedParentAnimals(animals.Count, query.ToString(), normalisedCph);
 
-        return new ParentAnimalsResponse
+        return new HoldingAnimalsResponse
         {
             Cph = normalisedCph,
             Animals = animals,
         };
     }
 
-    private async Task<HashSet<string>> GetEartagsUsedInSubmissionAsync(string cph, string? submissionId, CancellationToken cancellationToken)
+    private async Task<HashSet<string>> GetEarTagsUsedInSubmissionAsync(string cph, string? submissionId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(submissionId))
         {
@@ -91,11 +110,8 @@ public sealed partial class DataService(
         var submission = await submissionRepository.GetByHashIdAsync(SubmissionHashId.Normalise(submissionId), cancellationToken)
             ?? throw new NotFoundException($"Submission '{submissionId}' was not found.");
 
-        if (submission.Cph != cph)
-        {
-            throw new ArgumentException($"Submission '{submissionId}' is not for CPH '{cph}'.", nameof(submissionId));
-        }
-
-        return submission.Animals.Select(animal => CompareKey(animal.AnimalId)).ToHashSet();
+        return submission.Cph != cph
+            ? throw new ArgumentException($"Submission '{submissionId}' is not for CPH '{cph}'.", nameof(submissionId))
+            : submission.Animals.Select(animal => CompareKey(animal.AnimalId)).ToHashSet();
     }
 }

@@ -2,14 +2,11 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Endpoints.Health;
+namespace Defra.Livestock.Be4Fe.Api.Endpoints.Health;
 
-using Defra.Lis.Be4Fe.Api.MetaData;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
+using Defra.Livestock.Be4Fe.Api.MetaData;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using HealthStatusModel = Defra.Lis.Be4Fe.Models.Health.HealthStatus;
+using HealthStatusModel = Defra.Livestock.Be4Fe.Models.Health.HealthStatus;
 
 public static class HealthEndpoints
 {

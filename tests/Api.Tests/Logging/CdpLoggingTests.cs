@@ -2,9 +2,9 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Logging;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Logging;
 
-using Defra.Lis.Be4Fe.Api.Utils.Logging;
+using Defra.Livestock.Be4Fe.Api.Utils.Logging;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

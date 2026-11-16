@@ -2,25 +2,23 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Foundation.Endpoints;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Foundation.Endpoints;
 
 using System.Net;
 using System.Net.Http.Json;
-using Defra.Lis.Be4Fe.Api;
-using Defra.Lis.Be4Fe.Api.Endpoints.Health;
-using Defra.Lis.Be4Fe.Api.MetaData;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Health;
+using Defra.Livestock.Be4Fe.Api.MetaData;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using HealthStatusModel = Defra.Lis.Be4Fe.Models.Health.HealthStatus;
+using HealthStatusModel = Defra.Livestock.Be4Fe.Models.Health.HealthStatus;
 
-public class HealthEndpointsTest : IClassFixture<WebApplicationFactory<Program>>
+public class HealthEndpointsTest : IClassFixture<ApiFactory>
 {
-    private readonly WebApplicationFactory<Program> factory;
+    private readonly ApiFactory factory;
     private readonly HttpClient client;
 
-    public HealthEndpointsTest(WebApplicationFactory<Program> factory)
+    public HealthEndpointsTest(ApiFactory factory)
     {
         this.factory = factory;
         client = factory.CreateClient();

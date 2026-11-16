@@ -2,11 +2,11 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Services;
+namespace Defra.Livestock.Be4Fe.Api.Services;
 
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api.Config;
-using Defra.Lis.Be4Fe.Models.Data;
+using Defra.Livestock.Be4Fe.Api.Config;
+using Defra.Livestock.Be4Fe.Models.Data;
 using Microsoft.Extensions.Options;
 
 /// <summary>

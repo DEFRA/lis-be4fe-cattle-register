@@ -2,12 +2,11 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Services;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Services;
 
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.CattleApi;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 
 public sealed class NotConfiguredSubmissionTransferTest
 {

@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api;
+namespace Defra.Livestock.Be4Fe.Api;
 
 public static class RouteNames
 {

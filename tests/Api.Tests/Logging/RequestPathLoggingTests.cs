@@ -2,21 +2,21 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Logging;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Logging;
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
-using Defra.Lis.Be4Fe.Api.Endpoints.Submission;
-using Defra.Lis.Be4Fe.Api.Exceptions;
-using Defra.Lis.Be4Fe.Api.Middleware;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
-using Defra.Lis.Be4Fe.Api.Services;
-using Defra.Lis.Be4Fe.Api.Tests.Authentication;
-using Defra.Lis.Be4Fe.Api.Utils.Logging;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Endpoints.Submission;
+using Defra.Livestock.Be4Fe.Api.Exceptions;
+using Defra.Livestock.Be4Fe.Api.Middleware;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Services;
+using Defra.Livestock.Be4Fe.Api.Tests.Authentication;
+using Defra.Livestock.Be4Fe.Api.Utils.Logging;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -27,6 +27,9 @@ using Serilog.Events;
 /// Runs the submission endpoints through the logging pipeline from <c>Program</c> and checks that request paths are
 /// logged as route templates, so identifiers in a path never reach the logs.
 /// </summary>
+[SuppressMessage("SonarCloud", "S1172",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S1144",  Justification = "interface implementation.")]
+[SuppressMessage("SonarCloud", "S2325",  Justification = "interface implementation.")]
 public class RequestPathLoggingTests
 {
     private const string PathIdentifier = "5e0c8f8a-4b1d-4c7e-9a3f-6d2b8e1f0a47";
@@ -39,10 +42,10 @@ public class RequestPathLoggingTests
     {
         await using var app = await StartAppAsync();
 
-        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
+        var response = await AuthenticatedClient(app).GetAsync($"/submission/12/345/6789/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
-        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}");
+        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{county}/{parish}/{holding}/{submissionId}/{animalId}");
         AssertNoEventContainsThePathIdentifier();
     }
 
@@ -51,10 +54,10 @@ public class RequestPathLoggingTests
     {
         await using var app = await StartAppAsync();
 
-        var response = await AuthenticatedClient(app).GetAsync($"/submission/{PathIdentifier}/unknown", TestContext.Current.CancellationToken);
+        var response = await AuthenticatedClient(app).GetAsync($"/submission/12/345/6789/{PathIdentifier}/unknown", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
-        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{submissionId}/{animalId}");
+        AssertRequestLoggedWithRouteTemplate("GET", "/submission/{county}/{parish}/{holding}/{submissionId}/{animalId}");
         sink.Events.ShouldAllBe(e => !e.RenderMessage().Contains($"/submission/{PathIdentifier}", StringComparison.OrdinalIgnoreCase));
     }
 
@@ -63,7 +66,7 @@ public class RequestPathLoggingTests
     {
         await using var app = await StartAppAsync();
 
-        var response = await app.GetAuthenticatedTestClient().GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
+        var response = await app.GetAuthenticatedTestClient().GetAsync($"/submission/12/345/6789/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
         sink.Events.ShouldContain(e => e.MessageTemplate.Text.Contains(RequestHeaderNames.CorrelationId, StringComparison.Ordinal));
@@ -77,7 +80,7 @@ public class RequestPathLoggingTests
         var client = app.GetTestClient();
         client.DefaultRequestHeaders.Add(RequestHeaderNames.CorrelationId, CorrelationId);
 
-        var response = await client.GetAsync($"/submission/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
+        var response = await client.GetAsync($"/submission/12/345/6789/{PathIdentifier}/UK1", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         sink.Events.ShouldContain(e => e.MessageTemplate.Text.Contains("API key", StringComparison.Ordinal));
@@ -163,9 +166,14 @@ public class RequestPathLoggingTests
         return app;
     }
 
-    private sealed class StubSubmissionService : ISubmissionService
+    private sealed class StubSubmissionService
+        : ISubmissionService
     {
-        public Task<AnimalResponse> GetAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default)
+        public Task<AnimalResponse> GetAnimalAsync(
+            string cph,
+            string submissionId,
+            string animalId,
+            CancellationToken cancellationToken = default)
         {
             if (animalId == "unknown")
             {
@@ -180,22 +188,41 @@ public class RequestPathLoggingTests
             });
         }
 
-        public Task<SubmissionResponse> GetSubmissionAsync(string submissionId, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> GetSubmissionAsync(
+            string cph,
+            string submissionId,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<SubmissionResponse> StartAsync(string? cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> StartAsync(
+            string cph,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task UpsertAnimalAsync(string submissionId, string animalId, AnimalRequest request, CancellationToken cancellationToken = default) =>
+        public Task UpsertAnimalAsync(
+            string cph,
+            string submissionId,
+            string animalId,
+            AnimalRequest request,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task DeleteAnimalAsync(string submissionId, string animalId, CancellationToken cancellationToken = default) =>
+        public Task DeleteAnimalAsync(
+            string cph,
+            string submissionId,
+            string animalId,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task SubmitAsync(string submissionId, CancellationToken cancellationToken = default) =>
+        public Task SubmitAsync(
+            string cph,
+            string submissionId,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<SubmissionListResponse> ListAsync(string? cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionListResponse> ListAsync(
+            string cph,
+            CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
     }
 

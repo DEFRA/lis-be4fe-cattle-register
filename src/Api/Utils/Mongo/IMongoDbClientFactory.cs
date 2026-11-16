@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Utils.Mongo;
+namespace Defra.Livestock.Be4Fe.Api.Utils.Mongo;
 
 using MongoDB.Driver;
 

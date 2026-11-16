@@ -2,10 +2,10 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Foundation.Submissions;
+namespace Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
 
-using Defra.Lis.Be4Fe.Api.Utils.Mongo;
-using Defra.Lis.Be4Fe.Models.Submissions;
+using Defra.Livestock.Be4Fe.Api.Utils.Mongo;
+using Defra.Livestock.Be4Fe.Models.Submissions;
 using MongoDB.Driver;
 
 public sealed class MongoSubmissionRepository : ISubmissionRepository

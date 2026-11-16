@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.CattleApi.Dto;
+namespace Defra.Livestock.Be4Fe.CattleApi.Dto;
 
 /// <summary>
 /// One animal from the cattle API's cattle-on-holding response (camelCase JSON).

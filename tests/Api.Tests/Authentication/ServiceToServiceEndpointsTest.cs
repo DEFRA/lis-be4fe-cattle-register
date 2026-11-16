@@ -2,15 +2,13 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Authentication;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Authentication;
 
 using System.Net;
-using Defra.Lis.Be4Fe.Api;
-using Defra.Lis.Be4Fe.Api.Authentication;
-using Defra.Lis.Be4Fe.Api.Middleware.Headers;
+using Defra.Livestock.Be4Fe.Api.Authentication;
+using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,7 +37,7 @@ public sealed class ServiceToServiceEndpointsTest : IClassFixture<ServiceToServi
     [Theory]
     [InlineData("/submission/12/345/6789")]
     [InlineData("/submission/12/345/6789/start")]
-    [InlineData("/submission/1234/UK200000000001")]
+    [InlineData("/submission/12/345/6789/1234/UK200000000001")]
     public async Task ApiRequestWithoutTheKeyShouldBeRejected(string path)
     {
         var response = await CreateCorrelatedClient().GetAsync(path, TestContext.Current.CancellationToken);
@@ -77,10 +75,11 @@ public sealed class ServiceToServiceEndpointsTest : IClassFixture<ServiceToServi
         return client;
     }
 
-    public sealed class KeyedFactory : WebApplicationFactory<Program>
+    public sealed class KeyedFactory : ApiFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            base.ConfigureWebHost(builder);
             builder.UseSetting($"{ApiKeyAuthenticationOptions.SectionName}:Keys:0", TestAuthentication.ApiKey);
         }
     }

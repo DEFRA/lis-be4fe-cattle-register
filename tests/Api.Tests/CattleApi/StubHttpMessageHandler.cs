@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.CattleApi;
+namespace Defra.Livestock.Be4Fe.Api.Tests.CattleApi;
 
 using System.Net;
 using System.Text;

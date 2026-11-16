@@ -1,5 +1,3 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <PackageReference Include="MongoDB.Bson" />
-  </ItemGroup>
+
 </Project>

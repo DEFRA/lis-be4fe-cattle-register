@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Foundation.Submissions;
+namespace Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
 
 using System.Buffers.Binary;
 using System.Security.Cryptography;

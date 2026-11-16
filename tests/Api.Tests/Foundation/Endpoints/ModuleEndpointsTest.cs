@@ -2,20 +2,18 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Tests.Foundation.Endpoints;
+namespace Defra.Livestock.Be4Fe.Api.Tests.Foundation.Endpoints;
 
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api;
-using Defra.Lis.Be4Fe.Models.Health;
-using Microsoft.AspNetCore.Mvc.Testing;
+using Defra.Livestock.Be4Fe.Models.Health;
 
-public class ModuleEndpointsTest : IClassFixture<WebApplicationFactory<Program>>
+public class ModuleEndpointsTest : IClassFixture<ApiFactory>
 {
     private readonly HttpClient client;
 
-    public ModuleEndpointsTest(WebApplicationFactory<Program> factory)
+    public ModuleEndpointsTest(ApiFactory factory)
     {
         client = factory.CreateClient();
     }
@@ -43,14 +41,20 @@ public class ModuleEndpointsTest : IClassFixture<WebApplicationFactory<Program>>
 
         document.RootElement.GetProperty("info").GetProperty("title").GetString().ShouldBe("Cattle Register API");
         document.RootElement.GetProperty("paths").TryGetProperty("/submission/{county}/{parish}/{holding}/start", out _).ShouldBeTrue();
-        document.RootElement.GetProperty("paths").TryGetProperty("/submission/{submissionId}/{animalId}", out _).ShouldBeTrue();
+        document.RootElement.GetProperty("paths").TryGetProperty("/submission/{county}/{parish}/{holding}/{submissionId}/{animalId}", out _).ShouldBeTrue();
 
-        var animalOperation = document.RootElement.GetProperty("paths").GetProperty("/submission/{submissionId}/{animalId}").GetProperty("get");
+        var animalOperation = document.RootElement.GetProperty("paths").GetProperty("/submission/{county}/{parish}/{holding}/{submissionId}/{animalId}").GetProperty("get");
         animalOperation.GetProperty("operationId").GetString().ShouldBe("GetSubmissionAnimal");
         animalOperation.GetProperty("summary").GetString().ShouldBe("Gets an animal's data.");
         animalOperation.GetProperty("responses").TryGetProperty("404", out _).ShouldBeTrue();
         animalOperation.GetProperty("responses").TryGetProperty("401", out _).ShouldBeTrue();
         animalOperation.GetProperty("security")[0].TryGetProperty("ApiKey", out _).ShouldBeTrue();
+
+        var dataAnimalOperation = document.RootElement.GetProperty("paths").GetProperty("/data/{county}/{parish}/{holding}/animals/{animalId}").GetProperty("get");
+        dataAnimalOperation.GetProperty("operationId").GetString().ShouldBe("GetAnimal");
+        dataAnimalOperation.GetProperty("responses").GetProperty("200").GetProperty("content").GetProperty("application/json")
+            .GetProperty("schema").GetProperty("$ref").GetString().ShouldEndWith("/Animal");
+        dataAnimalOperation.GetProperty("responses").TryGetProperty("404", out _).ShouldBeTrue();
 
         var apiKey = document.RootElement.GetProperty("components").GetProperty("securitySchemes").GetProperty("ApiKey");
         apiKey.GetProperty("type").GetString().ShouldBe("apiKey");

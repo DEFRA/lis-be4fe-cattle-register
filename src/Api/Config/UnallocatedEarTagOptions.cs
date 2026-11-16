@@ -2,7 +2,7 @@
 // Copyright (c) Defra. All rights reserved.
 // </copyright>
 
-namespace Defra.Lis.Be4Fe.Api.Config;
+namespace Defra.Livestock.Be4Fe.Api.Config;
 
 /// <summary>
 /// Options for sourcing unallocated ear tags from the environment variable.
