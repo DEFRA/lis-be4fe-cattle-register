@@ -16,7 +16,6 @@ using Defra.Lis.Be4Fe.Api.Tests.Authentication;
 using Defra.Lis.Be4Fe.Api.Utils.Logging;
 using Defra.Lis.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;

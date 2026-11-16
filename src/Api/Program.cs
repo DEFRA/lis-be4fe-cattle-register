@@ -8,7 +8,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Defra.Lis.Be4Fe.Api.Authentication;
 using Defra.Lis.Be4Fe.Api.Config;
-using Defra.Lis.Be4Fe.Api.Endpoints;
 using Defra.Lis.Be4Fe.Api.Endpoints.Data;
 using Defra.Lis.Be4Fe.Api.Endpoints.Health;
 using Defra.Lis.Be4Fe.Api.Endpoints.Submission;
@@ -44,17 +43,9 @@ public class Program
     [ExcludeFromCodeCoverage]
     private static WebApplication CreateWebApplication(string[] args)
     {
+        // CreateBuilder already loads appsettings.json, appsettings.{Environment}.json, environment variables and the
+        // command line, in that order.
         var builder = WebApplication.CreateBuilder(args);
-
-        builder.Configuration
-            .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-            .AddJsonFile(
-                $"appsettings.{builder.Environment.EnvironmentName}.json",
-                optional: true,
-                reloadOnChange: true)
-            .AddEnvironmentVariables()
-            .AddCommandLine(args);
 
         ConfigureBuilder(builder, builder.Configuration);
 

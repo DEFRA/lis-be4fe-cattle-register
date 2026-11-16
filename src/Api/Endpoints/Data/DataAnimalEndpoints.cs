@@ -4,7 +4,6 @@
 
 namespace Defra.Lis.Be4Fe.Api.Endpoints.Data;
 
-using Defra.Lis.Be4Fe.Api.Authentication;
 using Defra.Lis.Be4Fe.Api.Services;
 using Defra.Lis.Be4Fe.Models.Data;
 

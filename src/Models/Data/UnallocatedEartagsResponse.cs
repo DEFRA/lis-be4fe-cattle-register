@@ -5,7 +5,6 @@
 namespace Defra.Lis.Be4Fe.Models.Data;
 
 using System.ComponentModel;
-using System.Text.Json.Serialization;
 
 /// <summary>
 /// The result of <c>GET /data/eartags/unallocated</c>: tags issued to the keeper that are not yet on an animal.

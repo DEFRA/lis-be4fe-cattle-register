@@ -7,15 +7,13 @@ namespace Defra.Lis.Be4Fe.Api.Tests.Foundation.Endpoints;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api;
 using Defra.Lis.Be4Fe.Models.Health;
-using Microsoft.AspNetCore.Mvc.Testing;
 
-public class ModuleEndpointsTest : IClassFixture<WebApplicationFactory<Program>>
+public class ModuleEndpointsTest : IClassFixture<ApiFactory>
 {
     private readonly HttpClient client;
 
-    public ModuleEndpointsTest(WebApplicationFactory<Program> factory)
+    public ModuleEndpointsTest(ApiFactory factory)
     {
         client = factory.CreateClient();
     }

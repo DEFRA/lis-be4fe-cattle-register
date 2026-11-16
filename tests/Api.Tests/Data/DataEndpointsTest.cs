@@ -15,7 +15,6 @@ using Defra.Lis.Be4Fe.Models.Data;
 using Defra.Lis.Be4Fe.Models.Lookups.Models;
 using Defra.Lis.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -282,7 +281,7 @@ public sealed class DataEndpointsTest : IAsyncDisposable
         return JsonDocument.Parse(await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken));
     }
 
-    private sealed class DataFactory(bool stubUnallocated = true) : WebApplicationFactory<Program>
+    private sealed class DataFactory(bool stubUnallocated = true) : ApiFactory
     {
         public const string ApiKey = "test-api-key";
 
@@ -302,6 +301,7 @@ public sealed class DataEndpointsTest : IAsyncDisposable
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            base.ConfigureWebHost(builder);
             builder.UseSetting($"{ApiKeyAuthenticationOptions.SectionName}:Keys:0", ApiKey);
             builder.ConfigureTestServices(services =>
             {

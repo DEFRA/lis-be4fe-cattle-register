@@ -4,7 +4,6 @@
 
 namespace Defra.Lis.Be4Fe.Api.Services;
 
-using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
 using Defra.Lis.Be4Fe.Models.Submissions;
 
 /// <summary>

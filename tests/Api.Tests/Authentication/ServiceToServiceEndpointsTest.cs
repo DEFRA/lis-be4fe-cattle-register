@@ -5,12 +5,10 @@
 namespace Defra.Lis.Be4Fe.Api.Tests.Authentication;
 
 using System.Net;
-using Defra.Lis.Be4Fe.Api;
 using Defra.Lis.Be4Fe.Api.Authentication;
 using Defra.Lis.Be4Fe.Api.Middleware.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -77,10 +75,11 @@ public sealed class ServiceToServiceEndpointsTest : IClassFixture<ServiceToServi
         return client;
     }
 
-    public sealed class KeyedFactory : WebApplicationFactory<Program>
+    public sealed class KeyedFactory : ApiFactory
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            base.ConfigureWebHost(builder);
             builder.UseSetting($"{ApiKeyAuthenticationOptions.SectionName}:Keys:0", TestAuthentication.ApiKey);
         }
     }

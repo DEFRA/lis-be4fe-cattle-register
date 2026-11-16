@@ -8,7 +8,6 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using System.Text.Json;
-using Defra.Lis.Be4Fe.Api;
 using Defra.Lis.Be4Fe.Api.Authentication;
 using Defra.Lis.Be4Fe.Api.Foundation.Submissions;
 using Defra.Lis.Be4Fe.Api.Middleware.Headers;
@@ -16,7 +15,6 @@ using Defra.Lis.Be4Fe.Api.Services;
 using Defra.Lis.Be4Fe.CattleApi;
 using Defra.Lis.Be4Fe.Models.Submissions;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -786,7 +784,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         return await client.PostAsync(url, content, TestContext.Current.CancellationToken);
     }
 
-    private sealed class SubmissionFactory : WebApplicationFactory<Program>
+    private sealed class SubmissionFactory : ApiFactory
     {
         public const string ApiKey = "test-api-key";
 
@@ -804,6 +802,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            base.ConfigureWebHost(builder);
             builder.UseSetting($"{ApiKeyAuthenticationOptions.SectionName}:Keys:0", ApiKey);
             builder.ConfigureTestServices(services =>
             {
