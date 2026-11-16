@@ -16,12 +16,12 @@ public interface IDataService
     /// animals already use are left out, so the same tag is not offered for two calves in one draft.
     /// </summary>
     /// <param name="cph">The county/parish/holding number.</param>
-    /// <param name="submissionId">The submission id.</param>
+    /// <param name="submissionId">The optional submission id; when null or blank, no tags are left out.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="ArgumentException">The CPH is missing or invalid, or the submission is for another CPH.</exception>
     /// <exception cref="Exceptions.NotFoundException">The submission is unknown.</exception>
     /// <returns>The unallocated eartags.</returns>
-    Task<UnallocatedEartagsResponse> GetUnallocatedEarTagsAsync(string cph, string submissionId, CancellationToken cancellationToken = default);
+    Task<UnallocatedEartagsResponse> GetUnallocatedEarTagsAsync(string cph, string? submissionId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Lists the female animals on the holding. Whether a dam is eligible for a given birth is checked when the

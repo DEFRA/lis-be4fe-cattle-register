@@ -544,7 +544,8 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
         using var list = await GetJsonAsync(ListUrl);
         var item = list.RootElement.GetProperty("submissions").EnumerateArray().ShouldHaveSingleItem();
         item.GetProperty("status").GetString().ShouldBe("SUBMITTED");
-        item.GetProperty("submitted-date").GetDateTimeOffset().ShouldBe(factory.Repository.Stored.ShouldHaveSingleItem().SubmittedDate.Value);
+        var submittedDate = factory.Repository.Stored.ShouldHaveSingleItem().SubmittedDate.ShouldNotBeNull();
+        item.GetProperty("submitted-date").GetDateTimeOffset().ShouldBe(submittedDate);
     }
 
     [Fact]
@@ -732,10 +733,8 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     {
         var id = await StartAsync();
         await UpdateAsync(id, Animal, """[{"key":"original","value":"kept","type":"STRING"}]""");
-        using var request = new HttpRequestMessage(new HttpMethod(method), $"{ListUrl}/{id}/{Animal}")
-        {
-            Content = new StringContent(payload, Encoding.UTF8, "application/json"),
-        };
+        using var request = new HttpRequestMessage(new HttpMethod(method), $"{ListUrl}/{id}/{Animal}");
+        request.Content = new StringContent(payload, Encoding.UTF8, "application/json");
 
         var response = await client.SendAsync(request, TestContext.Current.CancellationToken);
 
@@ -759,7 +758,7 @@ public sealed class SubmissionEndpointsTest : IAsyncDisposable
     private async Task<string> StartAsync()
     {
         using var body = await GetJsonAsync(StartUrl);
-        return body.RootElement.GetProperty("submission-id").GetString()!;
+        return body.RootElement.GetProperty("submission-id").GetString().ShouldNotBeNull();
     }
 
     private async Task UpdateAsync(string id, string animalId, string data)

@@ -24,7 +24,7 @@ public sealed partial class DataService(
 
     public async Task<UnallocatedEartagsResponse> GetUnallocatedEarTagsAsync(
         string cph,
-        string submissionId,
+        string? submissionId,
         CancellationToken cancellationToken = default)
     {
         var normalisedCph = CphQueryParameter.Normalise(cph);
@@ -100,7 +100,7 @@ public sealed partial class DataService(
         };
     }
 
-    private async Task<HashSet<string>> GetEarTagsUsedInSubmissionAsync(string cph, string submissionId, CancellationToken cancellationToken)
+    private async Task<HashSet<string>> GetEarTagsUsedInSubmissionAsync(string cph, string? submissionId, CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(submissionId))
         {
@@ -110,8 +110,8 @@ public sealed partial class DataService(
         var submission = await submissionRepository.GetByHashIdAsync(SubmissionHashId.Normalise(submissionId), cancellationToken)
             ?? throw new NotFoundException($"Submission '{submissionId}' was not found.");
 
-        return submission.Cph != cph ?
-            throw new ArgumentException($"Submission '{submissionId}' is not for CPH '{cph}'.", nameof(submissionId)) :
-            submission.Animals.Select(animal => CompareKey(animal.AnimalId)).ToHashSet();
+        return submission.Cph != cph
+            ? throw new ArgumentException($"Submission '{submissionId}' is not for CPH '{cph}'.", nameof(submissionId))
+            : submission.Animals.Select(animal => CompareKey(animal.AnimalId)).ToHashSet();
     }
 }
