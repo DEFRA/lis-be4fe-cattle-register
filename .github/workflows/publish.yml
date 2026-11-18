@@ -25,4 +25,4 @@ jobs:
         uses: DEFRA/lis-github-actions/actions/publish-container@feature/LREG-900-convert-to-actions # temporary branch test
         with:
           version: ${{ github.ref_name }}
-          nuget-username: ${{ secrets.NUGET_USERNAME }}
+          aws-account-id: ${{ secrets.LIS_AWS_ACCOUNT_ID }}
