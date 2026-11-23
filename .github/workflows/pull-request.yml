@@ -15,7 +15,7 @@ permissions:
 jobs:
   get-version:
     name: 'Calculate Prospective Version'
-    uses: DEFRA/lis-github-actions/.github/workflows/version.yml@0.5.0
+    uses: DEFRA/lis-github-actions/.github/workflows/version.yml@0.10.0
     with:
       ref: ${{ github.event.pull_request.head.sha }}
       branch: ${{ github.event.pull_request.head.ref }}
@@ -24,7 +24,7 @@ jobs:
   validate:
     name: 'Validate'
     needs: get-version
-    uses: DEFRA/lis-github-actions/.github/workflows/dotnet-service-validate.yml@0.5.0
+    uses: DEFRA/lis-github-actions/.github/workflows/dotnet-service-validate.yml@0.10.0
     with:
       version: ${{ needs.get-version.outputs.version }}
       ref: ${{ github.event.pull_request.head.sha }}
