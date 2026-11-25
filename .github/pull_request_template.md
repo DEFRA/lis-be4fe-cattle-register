@@ -1,20 +1,7 @@
-# LREG-XXXX Ticket Description
+## What
 
-## Summary
+- {bullet points of changes made}
 
-Change Summary
+## Why
 
-## Type of change
-
-- [ ] Bug fix
-- [ ] New feature
-- [ ] Documentation
-- [ ] Refactor
-- [ ] Unit Test Coverage
-
-## Checklist
-
-- [ ] I've added tests where applicable
-- [ ] I've updated docs where applicable
-- [ ] The change follows the project's coding style
-- [ ] All CI checks pass
+- {bullet points of what the changes are for }

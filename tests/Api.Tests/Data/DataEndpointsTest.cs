@@ -8,17 +8,19 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json;
 using Defra.Livestock.Be4Fe.Api.Authentication;
-using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
 using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
 using Defra.Livestock.Be4Fe.Api.Services;
 using Defra.Livestock.Be4Fe.CattleApi;
 using Defra.Livestock.Be4Fe.Models.Data;
 using Defra.Livestock.Be4Fe.Models.Lookups.Models;
-using Defra.Livestock.Be4Fe.Models.Submissions;
+using Defra.Livestock.Sdk.Core.Exceptions;
+using Defra.Livestock.Sdk.Submissions.Models;
+using Defra.Livestock.Sdk.Submissions.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using ServiceUnavailableException = Defra.Livestock.Be4Fe.CattleApi.ServiceUnavailableException;
 
 /// <summary>
 /// Runs the <c>/data</c> endpoints through the real pipeline with the cattle API and submission store stubbed.
@@ -87,13 +89,14 @@ public sealed class DataEndpointsTest : IAsyncDisposable
     }
 
     [Fact]
-    public async Task UnallocatedShouldReturn400WhenTheSubmissionIsForAnotherCph()
+    public async Task UnallocatedShouldLookUpTheSubmissionWithinTheCphFromTheRoute()
     {
         factory.Submissions.Add(Draft("ABC-DEF-GHJ", "98/765/4321", "UK123456700001"));
 
         var response = await client.GetAsync(UnallocatedUrl + "?submission-id=ABC-DEF-GHJ", TestContext.Current.CancellationToken);
 
-        response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+        factory.Submissions.Requests.ShouldHaveSingleItem().ShouldBe((Cph, "ABC-DEF-GHJ"));
         factory.Unallocated.RequestedCphs.ShouldBeEmpty();
     }
 
@@ -268,15 +271,14 @@ public sealed class DataEndpointsTest : IAsyncDisposable
         Status = "Alive",
     };
 
-    private static SubmissionDocument Draft(string hashId, string cph, params string[] animalIds) => new()
+    private static (string Cph, SubmissionResponse Submission) Draft(string submissionId, string cph, params string[] animalIds) => (cph, new()
     {
-        Id = Guid.NewGuid().ToString(),
-        HashId = hashId,
-        Cph = cph,
-        CreatedDate = DateTime.UtcNow,
+        SubmissionId = submissionId,
+        AnimalCount = animalIds.Length,
+        Animals = animalIds.Select(id => new SubmissionAnimalSummary { AnimalId = id, Status = ItemStatus.Draft }).ToList(),
         Status = SubmissionStatus.Draft,
-        Animals = animalIds.Select(id => new SubmissionAnimalDocument { AnimalId = id, Status = ItemStatus.Draft }).ToList(),
-    };
+        CreatedDate = DateTime.UtcNow,
+    });
 
     private async Task<JsonDocument> GetJsonAsync(string url)
     {
@@ -293,7 +295,7 @@ public sealed class DataEndpointsTest : IAsyncDisposable
 
         public StubCattleHoldingClient Cattle { get; } = new();
 
-        public StubSubmissionRepository Submissions { get; } = new();
+        public StubSubmissionService Submissions { get; } = new();
 
         public HttpClient CreateAuthenticatedClient()
         {
@@ -310,9 +312,9 @@ public sealed class DataEndpointsTest : IAsyncDisposable
             builder.ConfigureTestServices(services =>
             {
                 services.RemoveAll<ICattleHoldingClient>();
-                services.RemoveAll<ISubmissionRepository>();
+                services.RemoveAll<ISubmissionService>();
                 services.AddSingleton<ICattleHoldingClient>(Cattle);
-                services.AddSingleton<ISubmissionRepository>(Submissions);
+                services.AddSingleton<ISubmissionService>(Submissions);
 
                 if (stubUnallocated)
                 {
@@ -365,25 +367,48 @@ public sealed class DataEndpointsTest : IAsyncDisposable
         }
     }
 
-    private sealed class StubSubmissionRepository : ISubmissionRepository
+    /// <summary>
+    /// Stands in for the submissions SDK, which finds a submission only within its own CPH and matches ids case-insensitively.
+    /// </summary>
+    private sealed class StubSubmissionService : ISubmissionService
     {
-        private readonly List<SubmissionDocument> submissions = [];
+        private readonly List<(string Cph, SubmissionResponse Submission)> submissions = [];
 
-        public void Add(SubmissionDocument submission) => submissions.Add(submission);
+        public List<(string Cph, string SubmissionId)> Requests { get; } = [];
 
-        public Task<SubmissionDocument?> GetByHashIdAsync(string hashId, CancellationToken cancellationToken = default) =>
-            Task.FromResult(submissions.FirstOrDefault(submission => submission.HashId == hashId));
+        public void Add((string Cph, SubmissionResponse Submission) submission) => submissions.Add(submission);
 
-        public Task<SubmissionDocument?> FindDraftAsync(string cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> GetSubmissionAsync(string cph, string submissionId, CancellationToken cancellationToken = default)
+        {
+            Requests.Add((cph, submissionId));
+
+            var match = submissions.FirstOrDefault(s =>
+                s.Cph == cph && string.Equals(s.Submission.SubmissionId, submissionId, StringComparison.OrdinalIgnoreCase));
+
+            return match.Submission is null
+                ? throw new NotFoundException($"Submission '{submissionId}' was not found.")
+                : Task.FromResult(match.Submission);
+        }
+
+        public Task<SubmissionListResponse> ListAsync(string cph, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<bool> TryInsertDraftAsync(SubmissionDocument submission, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> StartAsync(string cph, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
 
-        public Task<IReadOnlyCollection<SubmissionDocument>> ListAsync(string cph, CancellationToken cancellationToken = default) =>
+        public Task<SubmissionResponse> StartAsync(string cph, string? key, CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
-        public Task<bool> TryReplaceDraftAsync(SubmissionDocument submission, int expectedVersion, CancellationToken cancellationToken = default) =>
+        public Task<AnimalResponse> GetAnimalAsync(string cph, string submissionId, string animalId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task UpsertAnimalAsync(string cph, string submissionId, string animalId, AnimalRequest request, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task DeleteAnimalAsync(string cph, string submissionId, string animalId, CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task SubmitAsync(string cph, string submissionId, CancellationToken cancellationToken = default) =>
             throw new NotSupportedException();
     }
 }

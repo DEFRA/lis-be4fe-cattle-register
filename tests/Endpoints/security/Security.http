@@ -1,12 +1,12 @@
 ### Start a submission (no x-api-key)
-GET {{host}}/submission/start?cph={{cph}}
+GET {{host}}/submission/{{cph}}/start
 x-cdp-request-id: {{$guid}}
 Accept: application/json
 
 > ../asserts/Should_be_401_unauthorized.js
 
 ### Start a submission (wrong x-api-key)
-GET {{host}}/submission/start?cph={{cph}}
+GET {{host}}/submission/{{cph}}/start
 x-api-key: not-a-valid-key
 x-cdp-request-id: {{$guid}}
 Accept: application/json
@@ -14,7 +14,7 @@ Accept: application/json
 > ../asserts/Should_be_401_unauthorized.js
 
 ### Start a submission (no x-cdp-request-id)
-GET {{host}}/submission/start?cph={{cph}}
+GET {{host}}/submission/{{cph}}/start
 x-api-key: {{apiKey}}
 Accept: application/json
 

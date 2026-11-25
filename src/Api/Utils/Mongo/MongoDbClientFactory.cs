@@ -44,4 +44,9 @@ public class MongoDbClientFactory : IMongoDbClientFactory
     {
         return client;
     }
+
+    public IMongoDatabase GetDatabase()
+    {
+        return mongoDatabase;
+    }
 }

@@ -1,5 +1,5 @@
 ### Start or continue a submission
-GET {{host}}/submission/start?cph={{cph}}
+GET {{host}}/submission/{{cph}}/start
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
@@ -9,15 +9,21 @@ Accept: application/json
     client.test("Status is 200", () => client.assert(response.status === 200));
 %}
 
-### Save an animal's details
-POST {{host}}/submission/{{submissionId}}:update
+### Resume that submission by its id
+GET {{host}}/submission/{{cph}}/start?key={{submissionId}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js
+
+### Save an animal's data
+POST {{host}}/submission/{{cph}}/{{submissionId}}/{{cattleId}}
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Content-Type: application/json
 
 {
-  "animal-id": "{{cattleId}}",
-  "section": "DETAILS",
   "status": "COMPLETE",
   "data": [
     {
@@ -30,46 +36,64 @@ Content-Type: application/json
 
 > ../asserts/Should_be_200_OK.js
 
-### Get an animal's details
-GET {{host}}/submission/{{submissionId}}/{{cattleId}}/details
+### Get an animal's data
+GET {{host}}/submission/{{cph}}/{{submissionId}}/{{cattleId}}
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
 
 > ../asserts/Should_be_200_OK.js
 
+### Get the submission and its animals
+GET {{host}}/submission/{{cph}}/{{submissionId}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json
+
+> ../asserts/Should_be_200_OK.js
+
+### Submit the submission
+# Answers 503 and leaves the submission a draft until the transfer to the cattle API is built.
+POST {{host}}/submission/{{cph}}/{{submissionId}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+
+> {%
+    client.test("Status is 503", () => client.assert(response.status === 503));
+%}
+
 ### Delete an animal
-DELETE {{host}}/submission/{{submissionId}}/{{cattleId}}
+DELETE {{host}}/submission/{{cph}}/{{submissionId}}/{{cattleId}}
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 
 > ../asserts/Should_be_200_OK.js
 
 ### Delete an animal (no longer in the submission)
-DELETE {{host}}/submission/{{submissionId}}/{{cattleId}}
+DELETE {{host}}/submission/{{cph}}/{{submissionId}}/{{cattleId}}
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 
 > ../asserts/Should_be_404.js
 
 ### List the submissions for a CPH
-GET {{host}}/submission?cph={{cph}}
+GET {{host}}/submission/{{cph}}
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
 
 > ../asserts/Should_be_200_OK.js
 
-### Get a section (unknown submission)
-GET {{host}}/submission/unknown/{{cattleId}}/details
+### Get an animal (unknown submission)
+GET {{host}}/submission/{{cph}}/ZZZ-ZZZ-ZZZ/{{cattleId}}
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
 
 > ../asserts/Should_be_404.js
 
-### Start a submission (no CPH)
-GET {{host}}/submission/start
+### Start a submission (invalid CPH)
+GET {{host}}/submission/22/001/not-a-holding/start
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json

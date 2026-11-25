@@ -4,17 +4,17 @@
 
 namespace Defra.Livestock.Be4Fe.Api.Services;
 
-using Defra.Livestock.Be4Fe.Api.Exceptions;
-using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
 using Defra.Livestock.Be4Fe.CattleApi;
 using Defra.Livestock.Be4Fe.Models.Data;
 using Defra.Livestock.Be4Fe.Models.Lookups.Models;
+using Defra.Livestock.Sdk.Core.Exceptions;
+using Defra.Livestock.Sdk.Submissions.Services;
 
 /// <inheritdoc />
 public sealed partial class DataService(
     IUnallocatedEarTagSource unallocatedEarTagSource,
     ICattleHoldingClient cattleHoldingClient,
-    ISubmissionRepository submissionRepository,
+    ISubmissionService submissionService,
     ILogger<DataService> logger)
     : IDataService
 {
@@ -107,11 +107,9 @@ public sealed partial class DataService(
             return [];
         }
 
-        var submission = await submissionRepository.GetByHashIdAsync(SubmissionHashId.Normalise(submissionId), cancellationToken)
-            ?? throw new NotFoundException($"Submission '{submissionId}' was not found.");
+        // The submissions SDK normalises the id and only finds the submission within the given CPH.
+        var submission = await submissionService.GetSubmissionAsync(cph, submissionId, cancellationToken);
 
-        return submission.Cph != cph
-            ? throw new ArgumentException($"Submission '{submissionId}' is not for CPH '{cph}'.", nameof(submissionId))
-            : submission.Animals.Select(animal => CompareKey(animal.AnimalId)).ToHashSet();
+        return submission.Animals.Select(animal => CompareKey(animal.AnimalId)).ToHashSet();
     }
 }

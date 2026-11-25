@@ -1,4 +1,4 @@
-name: 'Publish Container Image'
+name: 'Publish Container Packages'
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
       - '*.*.*'
 
 concurrency:
-  group: container-publish-${{ github.ref }}
+  group: nuget-publish-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -17,5 +17,12 @@ permissions:
 jobs:
   publish:
     name: 'Publish'
-    uses: DEFRA/lis-github-actions/.github/workflows/container-publish.yml@0.5.0
-    secrets: inherit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: release
+    steps:
+      - name: Publish Container packages
+        uses: DEFRA/lis-github-actions/actions/publish-container@90a6d6da2ab2d9caaf7ac11ef878017b51c09fd2 # v0.10.0
+        with:
+          version: ${{ github.ref_name }}
+          aws-account-id: ${{ secrets.LIS_AWS_ACCOUNT_ID }}

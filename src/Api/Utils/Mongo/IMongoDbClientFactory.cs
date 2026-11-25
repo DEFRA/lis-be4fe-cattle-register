@@ -10,5 +10,7 @@ public interface IMongoDbClientFactory
 {
     IMongoClient GetClient();
 
+    IMongoDatabase GetDatabase();
+
     IMongoCollection<T> GetCollection<T>(string collection);
 }

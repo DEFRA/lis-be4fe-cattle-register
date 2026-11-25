@@ -13,6 +13,7 @@ using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Operations.Http.Rest.Clien
 using Defra.Livestock.Sdk.Api.Strategies.Operations;
 using Defra.Livestock.Sdk.Api.Strategies.Operations.Http.Rest.Client;
 using Microsoft.Extensions.Logging.Abstractions;
+using ServiceUnavailableException = Defra.Livestock.Be4Fe.CattleApi.ServiceUnavailableException;
 
 public sealed class CattleHoldingRestClientTest
 {
