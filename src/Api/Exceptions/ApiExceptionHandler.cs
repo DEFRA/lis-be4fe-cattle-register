@@ -7,6 +7,7 @@ namespace Defra.Livestock.Be4Fe.Api.Exceptions;
 using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
 using Defra.Livestock.Be4Fe.Api.Utils.Logging;
 using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Exceptions;
 using Defra.Livestock.Sdk.Core.Exceptions;
 using Defra.Livestock.Sdk.Submissions.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
@@ -29,7 +30,7 @@ public sealed partial class ApiExceptionHandler(ILogger<ApiExceptionHandler> log
             ConflictException or SubmissionConflictException => (StatusCodes.Status409Conflict, "Conflict", "https://httpstatuses.com/409"),
 
             // A body that cannot be bound. ASP.NET throws this rather than answering 400 itself in Development.
-            BadHttpRequestException => (StatusCodes.Status400BadRequest, "Bad Request", "https://httpstatuses.com/400"),
+            BadHttpRequestException or BusinessRuleException => (StatusCodes.Status400BadRequest, "Bad Request", "https://httpstatuses.com/400"),
             ArgumentException => (StatusCodes.Status400BadRequest, "Bad Request", "https://httpstatuses.com/400"),
             UnauthorizedAccessException => (StatusCodes.Status403Forbidden, "Forbidden", "https://httpstatuses.com/403"),
             CoreServiceUnavailableException or CattleApiUnavailableException => (StatusCodes.Status503ServiceUnavailable, "Service Unavailable", "https://httpstatuses.com/503"),
