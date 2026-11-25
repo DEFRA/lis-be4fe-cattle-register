@@ -18,8 +18,8 @@ public interface IDataService
     /// <param name="cph">The county/parish/holding number.</param>
     /// <param name="submissionId">The optional submission id; when null or blank, no tags are left out.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <exception cref="ArgumentException">The CPH is missing or invalid, or the submission is for another CPH.</exception>
-    /// <exception cref="Exceptions.NotFoundException">The submission is unknown.</exception>
+    /// <exception cref="ArgumentException">The CPH is missing or invalid.</exception>
+    /// <exception cref="Defra.Livestock.Sdk.Core.Exceptions.NotFoundException">The submission is unknown or is for another CPH.</exception>
     /// <returns>The unallocated eartags.</returns>
     Task<UnallocatedEartagsResponse> GetUnallocatedEarTagsAsync(string cph, string? submissionId, CancellationToken cancellationToken = default);
 
@@ -39,7 +39,7 @@ public interface IDataService
     /// <param name="animalId">The animal's eartag.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <exception cref="ArgumentException">The CPH is missing or invalid.</exception>
-    /// <exception cref="Exceptions.NotFoundException">No animal on the holding has that eartag.</exception>
+    /// <exception cref="Defra.Livestock.Sdk.Core.Exceptions.NotFoundException">No animal on the holding has that eartag.</exception>
     /// <returns>The animal.</returns>
     Task<Animal> GetAnimalAsync(string cph, string animalId, CancellationToken cancellationToken = default);
 

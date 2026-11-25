@@ -1,12 +1,12 @@
 ### List the unallocated eartags for a CPH
 # Answers 503 until the cattle API endpoint for unallocated eartags is defined.
-GET {{host}}/data/eartags/unallocated?cph={{cph}}
+GET {{host}}/data/{{cph}}/ear-tags/unallocated
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
 
-### List the unallocated eartags (no cph)
-GET {{host}}/data/eartags/unallocated
+### List the unallocated eartags (invalid CPH)
+GET {{host}}/data/22/001/not-a-holding/ear-tags/unallocated
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
@@ -14,7 +14,7 @@ Accept: application/json
 > ../asserts/Should_be_400_bad_request.js
 
 ### List the possible dams for a CPH
-GET {{host}}/data/eartags/dams?cph={{cph}}
+GET {{host}}/data/{{cph}}/ear-tags/dams
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
@@ -22,9 +22,16 @@ Accept: application/json
 > ../asserts/Should_be_200_OK.js
 
 ### List the possible sires for a CPH
-GET {{host}}/data/eartags/sires?cph={{cph}}
+GET {{host}}/data/{{cph}}/ear-tags/sires
 x-api-key: {{apiKey}}
 x-cdp-request-id: {{$guid}}
 Accept: application/json
 
 > ../asserts/Should_be_200_OK.js
+
+### Get an animal on the holding
+# 404 if cattleId is not on the holding in the environment you are calling.
+GET {{host}}/data/{{cph}}/animals/{{cattleId}}
+x-api-key: {{apiKey}}
+x-cdp-request-id: {{$guid}}
+Accept: application/json

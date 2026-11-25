@@ -8,14 +8,16 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
-using Defra.Livestock.Be4Fe.Api.Endpoints.Submission;
+using Defra.Livestock.Be4Fe.Api.Authentication;
 using Defra.Livestock.Be4Fe.Api.Exceptions;
 using Defra.Livestock.Be4Fe.Api.Middleware;
 using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
-using Defra.Livestock.Be4Fe.Api.Services;
 using Defra.Livestock.Be4Fe.Api.Tests.Authentication;
 using Defra.Livestock.Be4Fe.Api.Utils.Logging;
-using Defra.Livestock.Be4Fe.Models.Submissions;
+using Defra.Livestock.Sdk.Core.Exceptions;
+using Defra.Livestock.Sdk.Submissions.Endpoints;
+using Defra.Livestock.Sdk.Submissions.Models;
+using Defra.Livestock.Sdk.Submissions.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -161,7 +163,7 @@ public class RequestPathLoggingTests
         app.UseRouting();
         app.UseMiddleware<CorrelationIdMiddleware>();
         app.UseTestServiceToServiceAuthentication();
-        app.UseSubmissionEndpoints();
+        app.MapSubmissionEndpoints().RequireServiceToServiceAuthorization();
         await app.StartAsync(TestContext.Current.CancellationToken);
         return app;
     }
@@ -197,6 +199,12 @@ public class RequestPathLoggingTests
         public Task<SubmissionResponse> StartAsync(
             string cph,
             CancellationToken cancellationToken = default) =>
+            throw new NotSupportedException();
+
+        public Task<SubmissionResponse> StartAsync(
+            string cph,
+            string? key,
+            CancellationToken cancellationToken) =>
             throw new NotSupportedException();
 
         public Task UpsertAnimalAsync(

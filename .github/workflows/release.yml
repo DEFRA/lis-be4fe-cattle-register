@@ -22,7 +22,7 @@ jobs:
     steps:
       - name: Calculate version
         id: version
-        uses: DEFRA/lis-github-actions/actions/version@feature/LREG-900-convert-to-actions # temporary branch test
+        uses: DEFRA/lis-github-actions/actions/version@90a6d6da2ab2d9caaf7ac11ef878017b51c09fd2 # v0.10.0
         with:
           ref: ${{ github.event.pull_request.merge_commit_sha }}
           branch: ${{ github.event.pull_request.head.ref }}
@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build, test and pack
-        uses: DEFRA/lis-github-actions/actions/build-test-dotnet@feature/LREG-900-convert-to-actions # temporary branch test
+        uses: DEFRA/lis-github-actions/actions/build-test-dotnet@90a6d6da2ab2d9caaf7ac11ef878017b51c09fd2 # v0.10.0
         with:
           version: ${{ needs.get-version.outputs.version }}
           ref: ${{ github.event.pull_request.merge_commit_sha }}
@@ -48,7 +48,7 @@ jobs:
     steps:
       - name: Run Sonar analysis
         id: sonar
-        uses: DEFRA/lis-github-actions/actions/sonar-dotnet@feature/LREG-900-convert-to-actions # temporary branch test
+        uses: DEFRA/lis-github-actions/actions/sonar-dotnet@90a6d6da2ab2d9caaf7ac11ef878017b51c09fd2 # v0.10.0
         with:
           version: ${{ needs.get-version.outputs.version }}
           ref: ${{ github.event.pull_request.merge_commit_sha }}
@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create tag
-        uses: DEFRA/lis-github-actions/actions/tag@feature/LREG-900-convert-to-actions # temporary branch test
+        uses: DEFRA/lis-github-actions/actions/tag@90a6d6da2ab2d9caaf7ac11ef878017b51c09fd2 # v0.10.0
         with:
           version: ${{ needs.get-version.outputs.version }}
           ref: ${{ github.event.pull_request.merge_commit_sha }}

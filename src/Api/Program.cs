@@ -10,9 +10,7 @@ using Defra.Livestock.Be4Fe.Api.Authentication;
 using Defra.Livestock.Be4Fe.Api.Config;
 using Defra.Livestock.Be4Fe.Api.Endpoints.Data;
 using Defra.Livestock.Be4Fe.Api.Endpoints.Health;
-using Defra.Livestock.Be4Fe.Api.Endpoints.Submission;
 using Defra.Livestock.Be4Fe.Api.Exceptions;
-using Defra.Livestock.Be4Fe.Api.Foundation.Submissions;
 using Defra.Livestock.Be4Fe.Api.MetaData;
 using Defra.Livestock.Be4Fe.Api.Middleware;
 using Defra.Livestock.Be4Fe.Api.Services;
@@ -23,6 +21,9 @@ using Defra.Livestock.Be4Fe.CattleApi;
 using Defra.Livestock.Sdk.Api.Strategies;
 using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Operations.Http.Rest.Client;
 using Defra.Livestock.Sdk.Api.Strategies.Operations.Http.Rest.Client;
+using Defra.Livestock.Sdk.Submissions;
+using Defra.Livestock.Sdk.Submissions.Endpoints;
+using Defra.Livestock.Sdk.Submissions.Services;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -121,9 +122,8 @@ public class Program
         services.AddScoped<ICattleHoldingClient, CattleHoldingRestClient>();
 
         // BFF framework submissions. The transfer to the cattle API is a stand-in that always fails until it is built.
-        services.AddSingleton<ISubmissionRepository, MongoSubmissionRepository>();
+        services.AddSubmissions();
         services.AddSingleton<ISubmissionTransfer, NotConfiguredSubmissionTransfer>();
-        services.AddScoped<ISubmissionService, SubmissionService>();
 
         // Reference data for the UI. Dams and sires come from the cattle-on-holding search; the cattle API endpoint for
         // unallocated eartags is not defined yet, so its source is a stand-in that always answers 503 until it is built.
@@ -146,6 +146,7 @@ public class Program
             .ValidateOnStart();
 
         services.AddSingleton<IMongoDbClientFactory, MongoDbClientFactory>();
+        services.AddSingleton(provider => provider.GetRequiredService<IMongoDbClientFactory>().GetDatabase());
     }
 
     [ExcludeFromCodeCoverage]
@@ -188,7 +189,7 @@ public class Program
         // Every /submission and /data endpoint requires AuthPolicies.ServiceToService and x-cdp-request-id; health and
         // OpenAPI stay anonymous and need no correlation header.
         app.UseHealthEndpoints();
-        app.UseSubmissionEndpoints();
+        app.MapSubmissionEndpoints().RequireServiceToServiceAuthorization();
         app.UseDataEndpoints();
 
         return app;

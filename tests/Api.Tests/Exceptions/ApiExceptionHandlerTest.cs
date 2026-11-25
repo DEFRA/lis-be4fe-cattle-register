@@ -9,8 +9,13 @@ using System.Text.Json;
 using Defra.Livestock.Be4Fe.Api.Exceptions;
 using Defra.Livestock.Be4Fe.Api.Middleware.Headers;
 using Defra.Livestock.Be4Fe.CattleApi;
+using Defra.Livestock.Sdk.Api.Strategies.Abstractions.Exceptions;
+using Defra.Livestock.Sdk.Core.Exceptions;
+using Defra.Livestock.Sdk.Submissions.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
+using CattleApiUnavailableException = Defra.Livestock.Be4Fe.CattleApi.ServiceUnavailableException;
+using CoreServiceUnavailableException = Defra.Livestock.Sdk.Core.Exceptions.ServiceUnavailableException;
 
 public sealed class ApiExceptionHandlerTest
 {
@@ -19,7 +24,11 @@ public sealed class ApiExceptionHandlerTest
         { new NotFoundException("missing"), StatusCodes.Status404NotFound, "Not Found" },
         { new HoldingNotFoundException("22/050/0050"), StatusCodes.Status404NotFound, "Not Found" },
         { new ConflictException("duplicate"), StatusCodes.Status409Conflict, "Conflict" },
-        { new ServiceUnavailableException("try again later", new HttpRequestException()), StatusCodes.Status503ServiceUnavailable, "Service Unavailable" },
+        { new SubmissionAlreadySubmittedException("ABC-DEF-GHJ"), StatusCodes.Status409Conflict, "Conflict" },
+        { new SubmissionNotFoundException("ABC-DEF-GHJ"), StatusCodes.Status404NotFound, "Not Found" },
+        { new SubmissionTransferNotConfiguredException(), StatusCodes.Status503ServiceUnavailable, "Service Unavailable" },
+        { new CattleApiUnavailableException("try again later", new HttpRequestException()), StatusCodes.Status503ServiceUnavailable, "Service Unavailable" },
+        { new CoreServiceUnavailableException("try again later"), StatusCodes.Status503ServiceUnavailable, "Service Unavailable" },
         { new BusinessRuleException("invalid"), StatusCodes.Status400BadRequest, "Bad Request" },
         { new BadHttpRequestException("unreadable body"), StatusCodes.Status400BadRequest, "Bad Request" },
         { new ArgumentException("bad argument"), StatusCodes.Status400BadRequest, "Bad Request" },

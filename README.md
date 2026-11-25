@@ -51,21 +51,17 @@ Paths under `/submission` and `/data` need the `x-api-key` and `x-cdp-request-id
 | `GET /health` | Health check |
 | `GET /openapi/v1.json` | OpenAPI v1 document (`/openapi` redirects to it) |
 | `GET /scalar/v1` | Interactive Scalar API reference |
-| `GET /submission/start?cph=` | The CPH's draft submission id and summary, creating a draft if it has none |
-| `GET /submission/{submissionId}/{animalId}/{section}` | One section of an animal's data, with an empty `data` array if none is stored. `404` if the submission is unknown |
-| `POST /submission/{submissionId}:update` | Saves one section of an animal's data and, if `status` is given, sets the animal's status (`DRAFT` or `COMPLETE`). `400` if the payload is invalid, `404` if the submission is unknown, `409` if it was already submitted or changed by another request |
-| `DELETE /submission/{submissionId}/{animalId}` | Removes an animal and all of its sections from a draft. `404` if the submission or animal is unknown, `409` if it was already submitted or changed by another request |
-| `POST /submission/{submissionId}:submit` | Transfers a draft to the cattle API and marks it `SUBMITTED`. `400` if it has no animals, `404` if unknown, `409` if already submitted, `503` if the transfer fails |
-| `GET /submission?cph=` | The CPH's submissions, newest first, each with the `animal-id` and `status` of its animals |
-| `GET /data/eartags/unallocated?cph=&submission-id=` | Eartags issued to the holding that are not yet on an animal. With `submission-id`, tags its animals already use are left out. `404` if the holding or submission is unknown, `400` if the submission is for another CPH. Always `503` until the cattle API endpoint exists |
+| `/submission/{county}/{parish}/{holding}/...` | The BFF framework submission endpoints, from the [`Defra.Livestock.Sdk.Submissions`](https://github.com/DEFRA/lis-sdk-nuget-submissions#endpoints) package |
+| `GET /data/eartags/unallocated?cph=&submission-id=` | Eartags issued to the holding that are not yet on an animal. With `submission-id`, tags its animals already use are left out. `404` if the holding is unknown or the submission is unknown or for another CPH. Always `503` until the cattle API endpoint exists |
 | `GET /data/eartags/dams?cph=` | Female animals on the holding, with breed and date of birth, from the cattle API |
 | `GET /data/eartags/sires?cph=` | Male animals on the holding, with breed and date of birth, from the cattle API |
 
 Errors use problem details.
 
-The `/submission` endpoints follow the BFF framework. Submissions are stored in the MongoDB `submissions` collection. The
-transfer to the cattle API is not built yet, so `POST /submission/{submissionId}:submit` currently always returns `503` and the
-submission stays a draft.
+The `/submission` endpoints, their storage in the MongoDB `submissions` collection and the cleanup of old submissions
+come from [`Defra.Livestock.Sdk.Submissions`](https://github.com/DEFRA/lis-sdk-nuget-submissions); this service supplies the
+Mongo database, the service-to-service authorization and the transfer. The transfer to the cattle API is not built yet
+(`NotConfiguredSubmissionTransfer`), so submitting currently always returns `503` and the submission stays a draft.
 
 ### Correlation ID
 
