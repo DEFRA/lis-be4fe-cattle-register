@@ -40,7 +40,6 @@ See [HUB-ARCHITECTURE.md](https://github.com/DEFRA/lis-dev/blob/main/HUB-ARCHITE
 - `tests/Api.Tests` holds the unit and endpoint tests
 - `tests/Endpoints` holds `.http` requests for every `/submission` endpoint (see [Running tests](#running-tests))
 - `compose.yml` starts MongoDB and this API on their own
-- `build.cake` and `base.cake` are the Cake build scripts
 
 ### Endpoints
 
@@ -214,11 +213,13 @@ End-to-end journeys are covered by [lis-journey-tests](https://github.com/DEFRA/
 
 ## Pipelines
 
-Build, versioning and publishing run in GitHub Actions (`.github/workflows`) using Cake scripts (`*.cake`):
+Build, versioning and publishing run in GitHub Actions (`.github/workflows`) using the shared composite actions from
+[lis-github-actions](https://github.com/DEFRA/lis-github-actions):
 
-- **Pull request to `main`**: format, build and test, Sonar analysis, version check
-- **Push to a `feature/` or `hotfix/` branch**: prerelease build and tag
-- **Merge to `main`**: release tag, then publish the container image to CDP
+- **Pull request to `main`**: version, build and test, Sonar analysis
+- **Push to a `feature/` or `hotfix/` branch**: prerelease build and test, Sonar analysis, then a prerelease tag if the quality gate passes
+- **Merge to `main`**: build and test, Sonar analysis, then a release tag if the quality gate passes
+- **Release tag pushed**: publish the container image to CDP
 
 Versions come from git tags (SemVer). The `Dockerfile` runs the tests and publishes the API.
 
