@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Defra.Livestock.Sdk.Api.Strategies" Version="0.0.14" />
+    <PackageVersion Include="Defra.Livestock.Sdk.Api.Strategies" Version="0.0.15" />
     <PackageVersion Include="Defra.Livestock.Sdk.Core" Version="0.3.0" />
     <PackageVersion Include="Defra.Livestock.Sdk.Submissions" Version="0.1.0" />
     <PackageVersion Include="Elastic.CommonSchema.Serilog" Version="9.0.0" />
